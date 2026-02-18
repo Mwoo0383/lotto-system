@@ -18,4 +18,10 @@
         )
     </insert>
 
+    <select id="findByParticipantId" resultType="LottoTicket">
+        SELECT *
+        FROM lotto_ticket
+        WHERE participant_id = #{participantId}
+    </select>
+
 </mapper>

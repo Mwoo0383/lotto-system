@@ -13,14 +13,12 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VerificationService {
 
     private final StringRedisTemplate redisTemplate;
     private final PhoneVerificationMapper phoneVerificationMapper;
-    private final SmsService smsService;
     private final String phonePepper;
 
     private static final Duration CODE_TTL = Duration.ofMinutes(3);
@@ -29,15 +27,12 @@ public class VerificationService {
     public VerificationService(
             StringRedisTemplate redisTemplate,
             PhoneVerificationMapper phoneVerificationMapper,
-            SmsService smsService,
-            @Value("${phone.hash.pepper:default-pepper-change-me}") String phonePepper) {
+            @Value("${phone.hash.pepper}") String phonePepper) {
         this.redisTemplate = redisTemplate;
         this.phoneVerificationMapper = phoneVerificationMapper;
-        this.smsService = smsService;
         this.phonePepper = phonePepper;
     }
 
-    @Transactional
     public Map<String, Object> sendCode(String phoneNumber, Long eventId) {
         String code = generateCode();
 
@@ -49,9 +44,10 @@ public class VerificationService {
         String redisKey = "verification:" + verification.getVerificationId();
         redisTemplate.opsForValue().set(redisKey, code, CODE_TTL);
 
-        smsService.sendVerificationCode(phoneNumber, code);
-
-        return Map.of("verificationId", verification.getVerificationId());
+        return Map.of(
+                "verificationId", verification.getVerificationId(),
+                "code", code
+        );
     }
 
     public boolean verifyCode(Long verificationId, String code) {
@@ -93,9 +89,7 @@ public class VerificationService {
     }
 
     private String normalizePhone(String phoneNumber) {
-        // 숫자만 추출
         String digits = phoneNumber.replaceAll("[^0-9]", "");
-        // +82 국제번호 → 0으로 변환
         if (digits.startsWith("82")) {
             digits = "0" + digits.substring(2);
         }

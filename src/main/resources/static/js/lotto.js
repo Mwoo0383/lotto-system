@@ -48,6 +48,8 @@ async function sendCode() {
 
         verificationId = data.verificationId;
         document.getElementById('step-verify').classList.remove('hidden');
+        document.getElementById('display-code').textContent = data.code;
+        document.getElementById('code-display').classList.remove('hidden');
         startTimer();
         btn.textContent = '재발송';
         btn.disabled = false;

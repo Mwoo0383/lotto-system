@@ -12,9 +12,9 @@ public class PhoneVerification {
     private Long eventId;
     private Long participantId;
     private VerificationStatus status;
-    private LocalDateTime sentAt;
+    private LocalDateTime requestedAt;
     private LocalDateTime verifiedAt;
-    private LocalDateTime expiresAt;
+    private LocalDateTime expiredAt;
 
     public enum VerificationStatus {
         REQUESTED,  // 인증요청

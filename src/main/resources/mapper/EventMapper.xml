@@ -5,6 +5,17 @@
 
 <mapper namespace="com.company.lotto.repository.EventMapper">
 
+    <insert id="insertEvent" parameterType="Event" useGeneratedKeys="true" keyProperty="eventId">
+        INSERT INTO event (name, start_at, end_at, announce_start_at, announce_end_at, status, winner_phone_hash)
+        VALUES (#{name}, #{startAt}, #{endAt}, #{announceStartAt}, #{announceEndAt}, #{status}, #{winnerPhoneHash})
+    </insert>
+
+    <select id="findAll" resultType="Event">
+        SELECT *
+        FROM event
+        ORDER BY event_id DESC
+    </select>
+
     <select id="findById" resultType="Event">
         SELECT *
         FROM event

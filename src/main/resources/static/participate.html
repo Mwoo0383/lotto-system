@@ -26,6 +26,9 @@
         <!-- Step 2: 인증번호 입력 -->
         <div id="step-verify" class="card step hidden">
             <h2>Step 2. 인증번호 입력</h2>
+            <div id="code-display" class="code-display hidden">
+                <p>인증번호: <strong id="display-code"></strong></p>
+            </div>
             <p class="timer-text">남은 시간: <span id="timer">03:00</span></p>
             <div class="input-group">
                 <input type="text" id="verify-code" placeholder="인증번호 6자리" maxlength="6">
@@ -45,7 +48,7 @@
             <h2>발급 완료!</h2>
             <p id="result-message"></p>
             <div id="lotto-numbers" class="lotto-numbers"></div>
-            <p class="result-sub">발급된 번호는 SMS로도 전송되었습니다.</p>
+            <p class="result-sub">발급된 번호를 확인해주세요.</p>
         </div>
 
         <!-- 에러 -->

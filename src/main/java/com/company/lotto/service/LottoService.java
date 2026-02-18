@@ -5,14 +5,11 @@ import com.company.lotto.domain.LottoTicket;
 import com.company.lotto.domain.NumberPool;
 import com.company.lotto.domain.NumberPool.PoolResult;
 import com.company.lotto.domain.Participant;
-import com.company.lotto.domain.PhoneVerification;
-import com.company.lotto.domain.SmsLog;
 import com.company.lotto.dto.ParticipateResponse;
 import com.company.lotto.repository.EventMapper;
 import com.company.lotto.repository.LottoTicketMapper;
 import com.company.lotto.repository.NumberPoolMapper;
 import com.company.lotto.repository.ParticipantMapper;
-import com.company.lotto.repository.SmsLogMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +23,7 @@ public class LottoService {
     private final ParticipantMapper participantMapper;
     private final NumberPoolMapper numberPoolMapper;
     private final LottoTicketMapper lottoTicketMapper;
-    private final SmsLogMapper smsLogMapper;
     private final VerificationService verificationService;
-    private final SmsService smsService;
 
     @Transactional
     public ParticipateResponse participate(String phoneNumber, Long eventId, Long verificationId) {
@@ -97,15 +92,7 @@ public class LottoService {
                 slot.getSlot4(), slot.getSlot5(), slot.getSlot6()
         );
 
-        // 8. SMS 발송
-        try {
-            smsService.sendLottoNumbers(phoneNumber, lottoNumbers, phoneLast4);
-            saveSmsLog(participant.getParticipantId(), SmsLog.SmsType.TICKET, SmsLog.SmsStatus.SUCCESS);
-        } catch (Exception e) {
-            saveSmsLog(participant.getParticipantId(), SmsLog.SmsType.TICKET, SmsLog.SmsStatus.FAILED);
-        }
-
-        // 9. 응답 반환
+        // 8. 응답 반환
         ParticipateResponse response = new ParticipateResponse();
         response.setLottoNumbers(lottoNumbers);
         response.setPhoneLast4(phoneLast4);
@@ -113,28 +100,40 @@ public class LottoService {
         return response;
     }
 
+    public ParticipateResponse findResult(String phoneNumber, Long eventId) {
+        String phoneHash = verificationService.hashPhone(phoneNumber);
+        Participant participant = participantMapper.findByPhoneHashAndEventId(phoneHash, eventId);
+        if (participant == null) {
+            throw new IllegalArgumentException("참가 이력이 없습니다.");
+        }
+
+        LottoTicket ticket = lottoTicketMapper.findByParticipantId(participant.getParticipantId());
+        if (ticket == null) {
+            throw new IllegalStateException("발급된 로또 번호가 없습니다.");
+        }
+
+        List<Integer> lottoNumbers = List.of(
+                ticket.getNum1(), ticket.getNum2(), ticket.getNum3(),
+                ticket.getNum4(), ticket.getNum5(), ticket.getNum6()
+        );
+
+        ParticipateResponse response = new ParticipateResponse();
+        response.setLottoNumbers(lottoNumbers);
+        response.setPhoneLast4(participant.getPhoneLast4());
+        response.setMessage("발급된 로또 번호입니다.");
+        return response;
+    }
+
     private PoolResult determineResult(String phoneHash, Event event, int ticketSeq) {
-        // 1등: phoneHash가 event.winnerPhoneHash와 일치
         if (phoneHash.equals(event.getWinnerPhoneHash())) {
             return PoolResult.FIRST;
         }
-        // 2등: ticket_seq 2000~7000
         if (ticketSeq >= 2000 && ticketSeq <= 7000) {
             return PoolResult.SECOND;
         }
-        // 3등: ticket_seq 1000~8000
         if (ticketSeq >= 1000 && ticketSeq <= 8000) {
             return PoolResult.THIRD;
         }
-        // 4등: 그 외
         return PoolResult.FOURTH;
-    }
-
-    private void saveSmsLog(Long participantId, SmsLog.SmsType type, SmsLog.SmsStatus status) {
-        SmsLog smsLog = new SmsLog();
-        smsLog.setParticipantId(participantId);
-        smsLog.setType(type);
-        smsLog.setStatus(status);
-        smsLogMapper.insertSmsLog(smsLog);
     }
 }

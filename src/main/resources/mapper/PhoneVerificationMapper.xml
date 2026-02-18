@@ -5,12 +5,12 @@
 
 <mapper namespace="com.company.lotto.repository.PhoneVerificationMapper">
 
-    <insert id="insert" parameterType="PhoneVerification" useGeneratedKeys="true" keyProperty="verificationId">
+    <insert id="insert" parameterType="PhoneVerification" useGeneratedKeys="true" keyProperty="verificationId" keyColumn="verification_id">
         INSERT INTO phone_verification (
             event_id,
             status,
-            sent_at,
-            expires_at
+            requested_at,
+            expired_at
         )
         VALUES (
             #{eventId},
