@@ -8,7 +8,8 @@ import lombok.Setter;
 @Setter
 public class ResultView {
 
+    private Long viewId;
     private Long participantId;
-    private Long viewCount;
-    private LocalDateTime firstViewAt;
+    private Integer viewCount;
+    private LocalDateTime lastViewAt;
 }

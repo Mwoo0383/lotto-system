@@ -74,6 +74,16 @@
             if (lastVisit === today) return;
 
             try {
+                // 발표 기간 우선 체크
+                const announceRes = await fetch('/api/event/announcing');
+                const announceData = await announceRes.json();
+                if (announceData.announcing) {
+                    localStorage.setItem(visitKey, today);
+                    location.href = '/result.html?eventId=' + announceData.eventId;
+                    return;
+                }
+
+                // 이벤트 진행 기간 체크
                 const res = await fetch('/api/event/active');
                 const data = await res.json();
                 if (data.active) {

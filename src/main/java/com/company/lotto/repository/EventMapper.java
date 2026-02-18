@@ -15,5 +15,7 @@ public interface EventMapper {
 
     Event findActiveEvent();
 
+    Event findAnnouncingEvent();
+
     void updateStatus(Long eventId, String status);
 }

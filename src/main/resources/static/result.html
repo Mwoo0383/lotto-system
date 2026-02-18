@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당첨 결과 확인</title>
+    <link rel="stylesheet" href="/css/lotto.css">
+    <style>
+        body {
+            align-items: flex-start;
+            padding-top: 40px;
+        }
+        .page-header {
+            text-align: center;
+            padding: 32px 24px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .page-header .event-name {
+            color: #4a90d9;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .page-header .announce-period {
+            color: #888;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .check-form h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .check-form p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* 결과 카드 */
+        .result-card {
+            text-align: center;
+            padding: 32px 24px;
+        }
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .result-tier {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .result-tier.won {
+            color: #e74c3c;
+        }
+        .result-tier.lost {
+            color: #999;
+        }
+        .result-status {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .result-status.won {
+            color: #e74c3c;
+        }
+        .result-status.lost {
+            color: #999;
+        }
+        .result-sub-msg {
+            color: #666;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-bottom: 16px;
+        }
+        .result-phone {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .lotto-numbers {
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .first-check-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+        .recheck-notice {
+            background: #f0f0f0;
+            color: #666;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 12px;
+        }
+        .back-link a {
+            color: #4a90d9;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .btn-retry {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            background: #fff;
+            color: #4a90d9;
+            border: 1px solid #4a90d9;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-retry:hover {
+            background: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card page-header">
+            <h1>당첨 결과 확인</h1>
+            <div id="event-name" class="event-name"></div>
+            <div id="announce-period" class="announce-period"></div>
+        </div>
+
+        <!-- 폰번호 입력 -->
+        <div id="step-check" class="card check-form">
+            <h2>본인 확인</h2>
+            <p>참가 시 입력한 휴대폰 번호를 입력해주세요.</p>
+            <div class="input-group">
+                <input type="tel" id="phone-number" placeholder="휴대폰 번호 (- 없이)" maxlength="11">
+                <button id="btn-check" onclick="checkResult()">확인</button>
+            </div>
+        </div>
+
+        <!-- 최초 확인 결과 (등수 공개) -->
+        <div id="step-first-result" class="card result-card hidden">
+            <div id="first-icon" class="result-icon"></div>
+            <div id="first-tier" class="result-tier"></div>
+            <div id="first-phone" class="result-phone"></div>
+            <div id="first-numbers" class="lotto-numbers"></div>
+            <div class="first-check-notice">
+                최초 1회에 한해 당첨 등수와 로또 번호가 공개됩니다.<br>
+                다음 조회부터는 당첨/미당첨 여부만 확인됩니다.
+            </div>
+            <button class="btn-retry" onclick="resetForm()">다른 번호로 확인</button>
+        </div>
+
+        <!-- 재확인 결과 (당첨/미당첨만) -->
+        <div id="step-recheck-result" class="card result-card hidden">
+            <div id="recheck-icon" class="result-icon"></div>
+            <div id="recheck-status" class="result-status"></div>
+            <div id="recheck-phone" class="result-phone"></div>
+            <div class="recheck-notice">
+                당첨 등수 및 로또 번호는 최초 확인 시에만 공개됩니다.
+            </div>
+            <button class="btn-retry" onclick="resetForm()">다른 번호로 확인</button>
+        </div>
+
+        <!-- 에러 -->
+        <div id="error-message" class="error hidden"></div>
+
+        <div class="back-link">
+            <a href="/">홈으로 돌아가기</a>
+        </div>
+    </div>
+
+    <script>
+        let eventId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            eventId = params.get('eventId');
+            if (!eventId) {
+                showError('eventId가 필요합니다.');
+                return;
+            }
+            loadEvent();
+        });
+
+        async function loadEvent() {
+            try {
+                const res = await fetch(`/api/event/${eventId}`);
+                if (!res.ok) throw new Error('이벤트를 찾을 수 없습니다.');
+                const data = await res.json();
+                document.getElementById('event-name').textContent = data.name;
+                if (data.announceStartAt && data.announceEndAt) {
+                    document.getElementById('announce-period').textContent =
+                        '발표 기간: ' + formatDate(data.announceStartAt) + ' ~ ' + formatDate(data.announceEndAt);
+                }
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+
+        async function checkResult() {
+            const phoneNumber = document.getElementById('phone-number').value.trim();
+            if (!/^01[016789]\d{7,8}$/.test(phoneNumber)) {
+                showError('올바른 휴대폰 번호를 입력해주세요.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-check');
+            btn.disabled = true;
+            btn.textContent = '확인 중...';
+            hideError();
+
+            try {
+                const res = await fetch('/api/lotto/result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber, eventId: Number(eventId) })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || '조회에 실패했습니다.');
+
+                document.getElementById('step-check').classList.add('hidden');
+
+                if (data.firstCheck) {
+                    showFirstResult(data);
+                } else {
+                    showRecheckResult(data);
+                }
+            } catch (e) {
+                showError(e.message);
+                btn.disabled = false;
+                btn.textContent = '확인';
+            }
+        }
+
+        function showFirstResult(data) {
+            const section = document.getElementById('step-first-result');
+
+            document.getElementById('first-icon').textContent = data.won ? '🎉' : '😔';
+
+            const tierEl = document.getElementById('first-tier');
+            tierEl.textContent = data.resultLabel;
+            tierEl.className = 'result-tier ' + (data.won ? 'won' : 'lost');
+
+            document.getElementById('first-phone').textContent = data.phoneLast4 + '님의 결과';
+
+            if (data.lottoNumbers && data.lottoNumbers.length > 0) {
+                document.getElementById('first-numbers').innerHTML =
+                    data.lottoNumbers.map(n => `<div class="lotto-ball">${n}</div>`).join('');
+            }
+
+            section.classList.remove('hidden');
+        }
+
+        function showRecheckResult(data) {
+            const section = document.getElementById('step-recheck-result');
+
+            document.getElementById('recheck-icon').textContent = data.won ? '🎉' : '😔';
+
+            const statusEl = document.getElementById('recheck-status');
+            statusEl.textContent = data.won ? '당첨' : '미당첨';
+            statusEl.className = 'result-status ' + (data.won ? 'won' : 'lost');
+
+            document.getElementById('recheck-phone').textContent = data.phoneLast4 + '님의 결과';
+
+            section.classList.remove('hidden');
+        }
+
+        function resetForm() {
+            document.getElementById('step-first-result').classList.add('hidden');
+            document.getElementById('step-recheck-result').classList.add('hidden');
+            document.getElementById('step-check').classList.remove('hidden');
+            document.getElementById('phone-number').value = '';
+            document.getElementById('btn-check').disabled = false;
+            document.getElementById('btn-check').textContent = '확인';
+            hideError();
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            return dateStr.replace('T', ' ').substring(0, 16);
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('error-message');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-message').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

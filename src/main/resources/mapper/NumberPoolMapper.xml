@@ -43,4 +43,10 @@
         WHERE pool_id = #{poolId}
     </update>
 
+    <select id="findByParticipantId" resultType="NumberPool">
+        SELECT *
+        FROM number_pool
+        WHERE used_participant_id = #{participantId}
+    </select>
+
 </mapper>

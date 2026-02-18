@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.lotto.repository.ResultViewMapper">
+
+    <select id="findByParticipantId" resultType="ResultView">
+        SELECT *
+        FROM result_view
+        WHERE participant_id = #{participantId}
+    </select>
+
+    <insert id="insert" parameterType="ResultView" useGeneratedKeys="true" keyProperty="viewId" keyColumn="view_id">
+        INSERT INTO result_view (participant_id, view_count, last_view_at)
+        VALUES (#{participantId}, 1, NOW())
+    </insert>
+
+    <update id="incrementViewCount">
+        UPDATE result_view
+        SET view_count = view_count + 1,
+            last_view_at = NOW()
+        WHERE participant_id = #{participantId}
+    </update>
+
+</mapper>

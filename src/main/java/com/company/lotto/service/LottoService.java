@@ -5,12 +5,16 @@ import com.company.lotto.domain.LottoTicket;
 import com.company.lotto.domain.NumberPool;
 import com.company.lotto.domain.NumberPool.PoolResult;
 import com.company.lotto.domain.Participant;
+import com.company.lotto.domain.ResultView;
 import com.company.lotto.dto.ParticipateResponse;
+import com.company.lotto.dto.ResultResponse;
 import com.company.lotto.repository.EventMapper;
 import com.company.lotto.repository.LottoTicketMapper;
 import com.company.lotto.repository.NumberPoolMapper;
 import com.company.lotto.repository.ParticipantMapper;
+import com.company.lotto.repository.ResultViewMapper;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +27,7 @@ public class LottoService {
     private final ParticipantMapper participantMapper;
     private final NumberPoolMapper numberPoolMapper;
     private final LottoTicketMapper lottoTicketMapper;
+    private final ResultViewMapper resultViewMapper;
     private final VerificationService verificationService;
 
     @Transactional
@@ -100,27 +105,55 @@ public class LottoService {
         return response;
     }
 
-    public ParticipateResponse findResult(String phoneNumber, Long eventId) {
+    private static final Map<PoolResult, String> RESULT_LABELS = Map.of(
+            PoolResult.FIRST, "1등 당첨",
+            PoolResult.SECOND, "2등 당첨",
+            PoolResult.THIRD, "3등 당첨",
+            PoolResult.FOURTH, "4등 당첨",
+            PoolResult.NONE, "미당첨"
+    );
+
+    @Transactional
+    public ResultResponse checkResult(String phoneNumber, Long eventId) {
         String phoneHash = verificationService.hashPhone(phoneNumber);
         Participant participant = participantMapper.findByPhoneHashAndEventId(phoneHash, eventId);
         if (participant == null) {
             throw new IllegalArgumentException("참가 이력이 없습니다.");
         }
 
-        LottoTicket ticket = lottoTicketMapper.findByParticipantId(participant.getParticipantId());
-        if (ticket == null) {
-            throw new IllegalStateException("발급된 로또 번호가 없습니다.");
+        NumberPool pool = numberPoolMapper.findByParticipantId(participant.getParticipantId());
+        if (pool == null) {
+            throw new IllegalStateException("배정된 슬롯이 없습니다.");
         }
 
-        List<Integer> lottoNumbers = List.of(
-                ticket.getNum1(), ticket.getNum2(), ticket.getNum3(),
-                ticket.getNum4(), ticket.getNum5(), ticket.getNum6()
-        );
+        ResultView resultView = resultViewMapper.findByParticipantId(participant.getParticipantId());
+        boolean isFirstCheck = resultView == null;
+        boolean won = pool.getResult() != PoolResult.NONE;
 
-        ParticipateResponse response = new ParticipateResponse();
-        response.setLottoNumbers(lottoNumbers);
+        ResultResponse response = new ResultResponse();
         response.setPhoneLast4(participant.getPhoneLast4());
-        response.setMessage("발급된 로또 번호입니다.");
+        response.setWon(won);
+        response.setFirstCheck(isFirstCheck);
+
+        if (isFirstCheck) {
+            response.setResultTier(pool.getResult().name());
+            response.setResultLabel(RESULT_LABELS.get(pool.getResult()));
+
+            LottoTicket ticket = lottoTicketMapper.findByParticipantId(participant.getParticipantId());
+            if (ticket != null) {
+                response.setLottoNumbers(List.of(
+                        ticket.getNum1(), ticket.getNum2(), ticket.getNum3(),
+                        ticket.getNum4(), ticket.getNum5(), ticket.getNum6()
+                ));
+            }
+
+            ResultView newView = new ResultView();
+            newView.setParticipantId(participant.getParticipantId());
+            resultViewMapper.insert(newView);
+        } else {
+            resultViewMapper.incrementViewCount(participant.getParticipantId());
+        }
+
         return response;
     }
 

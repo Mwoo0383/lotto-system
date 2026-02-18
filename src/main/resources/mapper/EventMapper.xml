@@ -30,6 +30,15 @@
         LIMIT 1
     </select>
 
+    <select id="findAnnouncingEvent" resultType="Event">
+        SELECT *
+        FROM event
+        WHERE announce_start_at &lt;= NOW()
+          AND announce_end_at &gt;= NOW()
+        ORDER BY event_id DESC
+        LIMIT 1
+    </select>
+
     <update id="updateStatus">
         UPDATE event
         SET status = #{status}

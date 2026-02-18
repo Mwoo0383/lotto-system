@@ -3,6 +3,7 @@ package com.company.lotto.controller;
 import com.company.lotto.domain.Event;
 import com.company.lotto.dto.ParticipateRequest;
 import com.company.lotto.dto.ParticipateResponse;
+import com.company.lotto.dto.ResultResponse;
 import com.company.lotto.dto.VerificationCodeRequest;
 import com.company.lotto.dto.VerificationRequest;
 import com.company.lotto.repository.EventMapper;
@@ -75,13 +76,19 @@ public class LottoController {
         if (event == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(Map.of(
-                "eventId", event.getEventId(),
-                "name", event.getName(),
-                "status", event.getStatus(),
-                "startAt", event.getStartAt().toString(),
-                "endAt", event.getEndAt().toString()
-        ));
+        var result = new java.util.HashMap<String, Object>();
+        result.put("eventId", event.getEventId());
+        result.put("name", event.getName());
+        result.put("status", event.getStatus());
+        result.put("startAt", event.getStartAt().toString());
+        result.put("endAt", event.getEndAt().toString());
+        if (event.getAnnounceStartAt() != null) {
+            result.put("announceStartAt", event.getAnnounceStartAt().toString());
+        }
+        if (event.getAnnounceEndAt() != null) {
+            result.put("announceEndAt", event.getAnnounceEndAt().toString());
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/event/{eventId}/generate-pool")
@@ -131,9 +138,9 @@ public class LottoController {
     }
 
     @PostMapping("/lotto/result")
-    public ResponseEntity<?> findResult(@RequestBody ParticipateRequest request) {
+    public ResponseEntity<?> checkResult(@RequestBody ParticipateRequest request) {
         try {
-            ParticipateResponse response = lottoService.findResult(
+            ResultResponse response = lottoService.checkResult(
                     request.getPhoneNumber(),
                     request.getEventId()
             );
@@ -142,6 +149,21 @@ public class LottoController {
             log.error("결과 조회 실패", e);
             return ResponseEntity.badRequest().body(Map.of("error", errorMessage(e)));
         }
+    }
+
+    @GetMapping("/event/announcing")
+    public ResponseEntity<?> getAnnouncingEvent() {
+        Event event = eventMapper.findAnnouncingEvent();
+        if (event == null) {
+            return ResponseEntity.ok(Map.of("announcing", false));
+        }
+        return ResponseEntity.ok(Map.of(
+                "announcing", true,
+                "eventId", event.getEventId(),
+                "name", event.getName(),
+                "announceStartAt", event.getAnnounceStartAt().toString(),
+                "announceEndAt", event.getAnnounceEndAt().toString()
+        ));
     }
 
     private String errorMessage(Exception e) {

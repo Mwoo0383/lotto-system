@@ -68,8 +68,7 @@
             display: flex;
             gap: 8px;
         }
-        .event-actions a,
-        .event-actions button {
+        .event-actions a {
             flex: 1;
             padding: 10px;
             border-radius: 8px;
@@ -78,7 +77,6 @@
             text-align: center;
             text-decoration: none;
             cursor: pointer;
-            border: none;
             transition: background-color 0.2s;
         }
         .btn-participate {
@@ -91,7 +89,7 @@
         .btn-result {
             background: #fff;
             color: #4a90d9;
-            border: 1px solid #4a90d9 !important;
+            border: 1px solid #4a90d9;
         }
         .btn-result:hover {
             background: #f0f7ff;
@@ -114,64 +112,6 @@
         .back-link a:hover {
             text-decoration: underline;
         }
-
-        /* 결과 조회 모달 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-overlay.show {
-            display: flex;
-        }
-        .modal {
-            background: #fff;
-            border-radius: 12px;
-            padding: 28px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
-        .modal h2 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .modal .input-group {
-            margin-bottom: 12px;
-        }
-        .modal-close {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            background: none;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            color: #666;
-        }
-        .modal-close:hover {
-            background: #f5f5f5;
-        }
-        .modal-result {
-            margin-top: 16px;
-            text-align: center;
-        }
-        .modal-result .lotto-numbers {
-            justify-content: center;
-        }
-        .modal-error {
-            color: #e74c3c;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -189,29 +129,7 @@
         </div>
     </div>
 
-    <!-- 결과 조회 모달 -->
-    <div id="result-modal" class="modal-overlay">
-        <div class="modal">
-            <h2>결과 조회</h2>
-            <p style="font-size:14px; color:#666; margin-bottom:12px; text-align:center;">
-                참가 시 입력한 휴대폰 번호를 입력해주세요.
-            </p>
-            <div class="input-group">
-                <input type="tel" id="result-phone" placeholder="휴대폰 번호 (- 없이)" maxlength="11">
-                <button class="btn-participate" onclick="lookupResult()">조회</button>
-            </div>
-            <div id="modal-error" class="modal-error hidden"></div>
-            <div id="modal-result" class="modal-result hidden">
-                <p id="modal-result-msg" style="margin-bottom:8px; color:#333;"></p>
-                <div id="modal-lotto-numbers" class="lotto-numbers"></div>
-            </div>
-            <button class="modal-close" onclick="closeModal()">닫기</button>
-        </div>
-    </div>
-
     <script>
-        let lookupEventId = null;
-
         document.addEventListener('DOMContentLoaded', loadEvents);
 
         async function loadEvents() {
@@ -221,8 +139,8 @@
                 document.getElementById('loading').classList.add('hidden');
 
                 if (events.length === 0) {
-                    const el = document.getElementById('event-list');
-                    el.innerHTML = '<div class="card empty">등록된 이벤트가 없습니다.</div>';
+                    document.getElementById('event-list').innerHTML =
+                        '<div class="card empty">등록된 이벤트가 없습니다.</div>';
                     return;
                 }
 
@@ -231,16 +149,9 @@
                 const ended = events.filter(e => e.status === 'ENDED');
 
                 let html = '';
-
-                if (active.length > 0) {
-                    html += renderSection('진행중', active, 'active');
-                }
-                if (ready.length > 0) {
-                    html += renderSection('준비중', ready, 'ready');
-                }
-                if (ended.length > 0) {
-                    html += renderSection('마감', ended, 'ended');
-                }
+                if (active.length > 0) html += renderSection('진행중', active, 'active');
+                if (ready.length > 0) html += renderSection('준비중', ready, 'ready');
+                if (ended.length > 0) html += renderSection('마감', ended, 'ended');
 
                 document.getElementById('event-list').innerHTML = html;
             } catch (e) {
@@ -254,15 +165,12 @@
                 const startAt = formatDate(ev.startAt);
                 const endAt = formatDate(ev.endAt);
 
-                let badgeClass = 'badge-' + type;
-                let badgeText = title;
-
                 let actions = '';
                 if (type === 'active') {
                     actions = `
                         <div class="event-actions">
                             <a href="/participate.html?eventId=${ev.eventId}" class="btn-participate">참가하기</a>
-                            <button class="btn-result" onclick="openResultModal(${ev.eventId})">결과보기</button>
+                            <a href="/result.html?eventId=${ev.eventId}" class="btn-result">결과보기</a>
                         </div>`;
                 }
 
@@ -270,7 +178,7 @@
                     <div class="card event-item">
                         <div class="event-header">
                             <span class="event-name">${ev.name}</span>
-                            <span class="badge ${badgeClass}">${badgeText}</span>
+                            <span class="badge badge-${type}">${title}</span>
                         </div>
                         <div class="event-period">${startAt} ~ ${endAt}</div>
                         ${actions}
@@ -283,58 +191,6 @@
             if (!dateStr) return '';
             return dateStr.replace('T', ' ').substring(0, 16);
         }
-
-        function openResultModal(eventId) {
-            lookupEventId = eventId;
-            document.getElementById('result-phone').value = '';
-            document.getElementById('modal-error').classList.add('hidden');
-            document.getElementById('modal-result').classList.add('hidden');
-            document.getElementById('result-modal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('result-modal').classList.remove('show');
-        }
-
-        async function lookupResult() {
-            const phoneNumber = document.getElementById('result-phone').value.trim();
-            if (!/^01[016789]\d{7,8}$/.test(phoneNumber)) {
-                showModalError('올바른 휴대폰 번호를 입력해주세요.');
-                return;
-            }
-
-            document.getElementById('modal-error').classList.add('hidden');
-            document.getElementById('modal-result').classList.add('hidden');
-
-            try {
-                const res = await fetch('/api/lotto/result', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phoneNumber, eventId: lookupEventId })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || '조회에 실패했습니다.');
-
-                document.getElementById('modal-result-msg').textContent =
-                    `${data.phoneLast4}님의 ${data.message}`;
-                document.getElementById('modal-lotto-numbers').innerHTML =
-                    data.lottoNumbers.map(n => `<div class="lotto-ball">${n}</div>`).join('');
-                document.getElementById('modal-result').classList.remove('hidden');
-            } catch (e) {
-                showModalError(e.message);
-            }
-        }
-
-        function showModalError(msg) {
-            const el = document.getElementById('modal-error');
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-
-        // 모달 바깥 클릭 시 닫기
-        document.getElementById('result-modal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeModal();
-        });
     </script>
 </body>
 </html>
