@@ -11,6 +11,14 @@
         WHERE event_id = #{eventId}
     </select>
 
+    <select id="findActiveEvent" resultType="Event">
+        SELECT *
+        FROM event
+        WHERE status = 'ACTIVE'
+        ORDER BY event_id DESC
+        LIMIT 1
+    </select>
+
     <update id="updateStatus">
         UPDATE event
         SET status = #{status}

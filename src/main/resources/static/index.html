@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또 당첨 시스템</title>
+    <link rel="stylesheet" href="/css/lotto.css">
+    <style>
+        body {
+            align-items: center;
+        }
+        .hero {
+            text-align: center;
+            padding: 40px 24px;
+        }
+        .hero-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        .hero p {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .event-card {
+            text-align: center;
+        }
+        .event-card h2 {
+            text-align: center;
+            color: #4a90d9;
+        }
+        .event-card .event-period {
+            margin: 8px 0 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        .no-event {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card hero">
+            <div class="hero-icon">🎱</div>
+            <h1>로또 당첨 시스템</h1>
+            <p>행운의 로또 번호를 받아보세요!<br>휴대폰 인증 후 바로 참가할 수 있습니다.</p>
+        </div>
+
+        <div id="event-section" class="card event-card">
+            <div id="loading" class="loading">이벤트 정보를 불러오는 중...</div>
+            <div id="event-detail" class="hidden">
+                <h2 id="event-name"></h2>
+                <p class="event-period" id="event-period"></p>
+                <button class="btn-primary" id="btn-participate" onclick="goParticipate()">참가하기</button>
+            </div>
+            <div id="no-event" class="no-event hidden">
+                <p>현재 진행 중인 이벤트가 없습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeEventId = null;
+
+        document.addEventListener('DOMContentLoaded', loadActiveEvent);
+
+        async function loadActiveEvent() {
+            try {
+                const res = await fetch('/api/event/active');
+                const data = await res.json();
+                document.getElementById('loading').classList.add('hidden');
+
+                if (data.active) {
+                    activeEventId = data.eventId;
+                    document.getElementById('event-name').textContent = data.name;
+                    document.getElementById('event-period').textContent =
+                        data.startAt.replace('T', ' ') + ' ~ ' + data.endAt.replace('T', ' ');
+                    document.getElementById('event-detail').classList.remove('hidden');
+
+                    // 최초 접속 시 자동으로 참가 페이지 이동
+                    if (!sessionStorage.getItem('visited')) {
+                        sessionStorage.setItem('visited', 'true');
+                        goParticipate();
+                    }
+                } else {
+                    document.getElementById('no-event').classList.remove('hidden');
+                }
+            } catch (e) {
+                document.getElementById('loading').textContent = '이벤트 정보를 불러올 수 없습니다.';
+            }
+        }
+
+        function goParticipate() {
+            if (activeEventId) {
+                location.href = '/participate.html?eventId=' + activeEventId;
+            }
+        }
+    </script>
+</body>
+</html>

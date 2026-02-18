@@ -8,5 +8,7 @@ public interface EventMapper {
 
     Event findById(Long eventId);
 
+    Event findActiveEvent();
+
     void updateStatus(Long eventId, String status);
 }

@@ -29,6 +29,22 @@ public class LottoController {
     private final LottoService lottoService;
     private final NumberPoolService numberPoolService;
 
+    @GetMapping("/event/active")
+    public ResponseEntity<?> getActiveEvent() {
+        Event event = eventMapper.findActiveEvent();
+        if (event == null) {
+            return ResponseEntity.ok(Map.of("active", false));
+        }
+        return ResponseEntity.ok(Map.of(
+                "active", true,
+                "eventId", event.getEventId(),
+                "name", event.getName(),
+                "status", event.getStatus(),
+                "startAt", event.getStartAt().toString(),
+                "endAt", event.getEndAt().toString()
+        ));
+    }
+
     @GetMapping("/event/{eventId}")
     public ResponseEntity<?> getEvent(@PathVariable Long eventId) {
         Event event = eventMapper.findById(eventId);
