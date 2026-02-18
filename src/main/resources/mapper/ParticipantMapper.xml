@@ -5,7 +5,7 @@
 
 <mapper namespace="com.company.lotto.repository.ParticipantMapper">
 
-    <insert id="insertParticipant" parameterType="Participant">
+    <insert id="insertParticipant" parameterType="Participant" useGeneratedKeys="true" keyProperty="participantId">
         INSERT INTO participant (
         phone_hash,
         phone_encrypted,
@@ -29,6 +29,12 @@
         FROM participant
         WHERE phone_hash = #{phoneHash}
         AND event_id = #{eventId}
+    </select>
+
+    <select id="countByEventId" resultType="int">
+        SELECT COUNT(*)
+        FROM participant
+        WHERE event_id = #{eventId}
     </select>
 
 </mapper>

@@ -8,9 +8,23 @@ spring:
     password: ${LOTTO_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   sql:
     init:
       mode: never
+
+phone:
+  hash:
+    pepper: ${PHONE_HASH_PEPPER:default-pepper-change-me}
+
+coolsms:
+  api-key: ${COOLSMS_API_KEY:}
+  api-secret: ${COOLSMS_API_SECRET:}
+  from-number: ${COOLSMS_FROM_NUMBER:}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

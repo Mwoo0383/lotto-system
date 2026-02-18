@@ -26,4 +26,21 @@
         WHERE event_id = #{eventId}
     </select>
 
+    <select id="findAvailableSlot" resultType="NumberPool">
+        SELECT *
+        FROM number_pool
+        WHERE event_id = #{eventId}
+          AND result = #{result}
+          AND is_used = 0
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <update id="assignSlot">
+        UPDATE number_pool
+        SET is_used = 1,
+            used_participant_id = #{participantId}
+        WHERE pool_id = #{poolId}
+    </update>
+
 </mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.lotto.repository.PhoneVerificationMapper">
+
+    <insert id="insert" parameterType="PhoneVerification" useGeneratedKeys="true" keyProperty="verificationId">
+        INSERT INTO phone_verification (
+            event_id,
+            status,
+            sent_at,
+            expires_at
+        )
+        VALUES (
+            #{eventId},
+            #{status},
+            NOW(),
+            DATE_ADD(NOW(), INTERVAL 3 MINUTE)
+        )
+    </insert>
+
+    <select id="findById" resultType="PhoneVerification">
+        SELECT *
+        FROM phone_verification
+        WHERE verification_id = #{verificationId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE phone_verification
+        SET status = #{status},
+            verified_at = CASE WHEN #{status} = 'VERIFIED' THEN NOW() ELSE verified_at END
+        WHERE verification_id = #{verificationId}
+    </update>
+
+</mapper>

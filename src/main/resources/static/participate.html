@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또 이벤트 참가</title>
+    <link rel="stylesheet" href="/css/lotto.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 이벤트 정보 -->
+        <div id="event-info" class="card">
+            <h1 id="event-name">로또 이벤트</h1>
+            <p id="event-period" class="event-period"></p>
+        </div>
+
+        <!-- Step 1: 휴대폰 번호 입력 -->
+        <div id="step-phone" class="card step">
+            <h2>Step 1. 휴대폰 인증</h2>
+            <div class="input-group">
+                <input type="tel" id="phone-number" placeholder="휴대폰 번호 (- 없이)" maxlength="11">
+                <button id="btn-send-code" onclick="sendCode()">인증번호 발송</button>
+            </div>
+        </div>
+
+        <!-- Step 2: 인증번호 입력 -->
+        <div id="step-verify" class="card step hidden">
+            <h2>Step 2. 인증번호 입력</h2>
+            <p class="timer-text">남은 시간: <span id="timer">03:00</span></p>
+            <div class="input-group">
+                <input type="text" id="verify-code" placeholder="인증번호 6자리" maxlength="6">
+                <button id="btn-verify" onclick="verifyCode()">확인</button>
+            </div>
+        </div>
+
+        <!-- Step 3: 참가 -->
+        <div id="step-participate" class="card step hidden">
+            <h2>Step 3. 이벤트 참가</h2>
+            <p>인증이 완료되었습니다!</p>
+            <button id="btn-participate" class="btn-primary" onclick="participate()">로또 번호 받기</button>
+        </div>
+
+        <!-- 결과 -->
+        <div id="step-result" class="card step hidden">
+            <h2>발급 완료!</h2>
+            <p id="result-message"></p>
+            <div id="lotto-numbers" class="lotto-numbers"></div>
+            <p class="result-sub">발급된 번호는 SMS로도 전송되었습니다.</p>
+        </div>
+
+        <!-- 에러 -->
+        <div id="error-message" class="error hidden"></div>
+    </div>
+
+    <script src="/js/lotto.js"></script>
+</body>
+</html>

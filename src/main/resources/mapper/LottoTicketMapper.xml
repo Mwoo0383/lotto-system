@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.lotto.repository.LottoTicketMapper">
+
+    <insert id="insertTicket" parameterType="LottoTicket" useGeneratedKeys="true" keyProperty="ticketId">
+        INSERT INTO lotto_ticket (
+            participant_id,
+            num1, num2, num3, num4, num5, num6,
+            issued_at
+        )
+        VALUES (
+            #{participantId},
+            #{num1}, #{num2}, #{num3}, #{num4}, #{num5}, #{num6},
+            NOW()
+        )
+    </insert>
+
+</mapper>
