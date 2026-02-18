@@ -165,11 +165,18 @@
                 const startAt = formatDate(ev.startAt);
                 const endAt = formatDate(ev.endAt);
 
+                const now = new Date();
+                const inAnnounce = ev.announceStartAt && ev.announceEndAt
+                    && now >= new Date(ev.announceStartAt) && now <= new Date(ev.announceEndAt);
+
                 let actions = '';
                 if (type === 'active') {
-                    actions = `
-                        <div class="event-actions">
+                    actions = `<div class="event-actions">
                             <a href="/participate.html?eventId=${ev.eventId}" class="btn-participate">참가하기</a>
+                            ${inAnnounce ? `<a href="/result.html?eventId=${ev.eventId}" class="btn-result">결과보기</a>` : ''}
+                        </div>`;
+                } else if (inAnnounce) {
+                    actions = `<div class="event-actions">
                             <a href="/result.html?eventId=${ev.eventId}" class="btn-result">결과보기</a>
                         </div>`;
                 }

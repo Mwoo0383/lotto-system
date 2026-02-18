@@ -13,6 +13,7 @@ import com.company.lotto.repository.LottoTicketMapper;
 import com.company.lotto.repository.NumberPoolMapper;
 import com.company.lotto.repository.ParticipantMapper;
 import com.company.lotto.repository.ResultViewMapper;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -115,6 +116,22 @@ public class LottoService {
 
     @Transactional
     public ResultResponse checkResult(String phoneNumber, Long eventId) {
+        Event event = eventMapper.findById(eventId);
+        if (event == null) {
+            throw new IllegalArgumentException("존재하지 않는 이벤트입니다.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (event.getAnnounceStartAt() == null || event.getAnnounceEndAt() == null) {
+            throw new IllegalStateException("발표 기간이 설정되지 않은 이벤트입니다.");
+        }
+        if (now.isBefore(event.getAnnounceStartAt())) {
+            throw new IllegalStateException("아직 발표 기간이 아닙니다.");
+        }
+        if (now.isAfter(event.getAnnounceEndAt())) {
+            throw new IllegalStateException("발표 기간이 종료되었습니다.");
+        }
+
         String phoneHash = verificationService.hashPhone(phoneNumber);
         Participant participant = participantMapper.findByPhoneHashAndEventId(phoneHash, eventId);
         if (participant == null) {
