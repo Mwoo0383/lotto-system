@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.lotto.repository.EventMapper">
+
+    <select id="findById" resultType="Event">
+        SELECT *
+        FROM event
+        WHERE event_id = #{eventId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE event
+        SET status = #{status}
+        WHERE event_id = #{eventId}
+    </update>
+
+</mapper>

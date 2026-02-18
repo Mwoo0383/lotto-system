@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.lotto.repository.NumberPoolMapper">
+
+    <insert id="batchInsert" parameterType="list">
+        INSERT INTO number_pool (
+        slot1, slot2, slot3, slot4, slot5, slot6,
+        result, is_used, event_id
+        )
+        VALUES
+        <foreach collection="list" item="pool" separator=",">
+            (
+            #{pool.slot1}, #{pool.slot2}, #{pool.slot3},
+            #{pool.slot4}, #{pool.slot5}, #{pool.slot6},
+            #{pool.result}, #{pool.isUsed}, #{pool.eventId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="countByEventId" resultType="int">
+        SELECT COUNT(*)
+        FROM number_pool
+        WHERE event_id = #{eventId}
+    </select>
+
+</mapper>
