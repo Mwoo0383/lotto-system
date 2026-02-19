@@ -11,9 +11,9 @@
         WHERE participant_id = #{participantId}
     </select>
 
-    <insert id="insert" parameterType="ResultView" useGeneratedKeys="true" keyProperty="viewId" keyColumn="view_id">
-        INSERT INTO result_view (participant_id, view_count, last_view_at)
-        VALUES (#{participantId}, 1, NOW())
+    <insert id="insert" parameterType="ResultView">
+        INSERT INTO result_view (participant_id, view_count, first_view_at, last_view_at)
+        VALUES (#{participantId}, 1, NOW(), NOW())
     </insert>
 
     <update id="incrementViewCount">

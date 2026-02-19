@@ -154,6 +154,12 @@
 
             body.winnerPhoneHash = document.getElementById('winnerPhone').value.trim();
 
+            if (body.endAt >= body.announceStartAt) {
+                showResult('error', '참가 종료일은 발표 시작일보다 이전이어야 합니다.');
+                btn.disabled = false;
+                return;
+            }
+
             try {
                 const res = await fetch('/api/event', {
                     method: 'POST',
@@ -173,8 +179,9 @@
 
         async function loadEvents() {
             try {
-                const res = await fetch('/api/events');
-                const events = await res.json();
+                const res = await fetch('/api/events?size=100');
+                const data = await res.json();
+                const events = data.events;
                 const listEl = document.getElementById('event-list');
 
                 if (events.length === 0) {

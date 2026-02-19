@@ -62,7 +62,7 @@ public class LottoService {
         Participant participant = new Participant();
         participant.setEventId(eventId);
         participant.setPhoneHash(phoneHash);
-        participant.setPhoneEncrypted(phoneNumber); // TODO: 실제 암호화 적용
+        participant.setPhoneEncrypted(verificationService.encryptPhone(phoneNumber));
         participant.setPhoneLast4(phoneLast4);
         participant.setTicketSeq(ticketSeq);
         participantMapper.insertParticipant(participant);

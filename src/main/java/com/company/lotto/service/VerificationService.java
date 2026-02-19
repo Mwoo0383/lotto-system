@@ -6,10 +6,15 @@ import com.company.lotto.repository.PhoneVerificationMapper;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Random;
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,17 +25,33 @@ public class VerificationService {
     private final StringRedisTemplate redisTemplate;
     private final PhoneVerificationMapper phoneVerificationMapper;
     private final String phonePepper;
+    private final SecretKeySpec encryptionKey;
 
     private static final Duration CODE_TTL = Duration.ofMinutes(3);
     private static final String PHONE_SALT = "lotto-event-phone-salt-2026";
+    private static final String AES_ALGORITHM = "AES/GCM/NoPadding";
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 128;
 
     public VerificationService(
             StringRedisTemplate redisTemplate,
             PhoneVerificationMapper phoneVerificationMapper,
-            @Value("${phone.hash.pepper}") String phonePepper) {
+            @Value("${phone.hash.pepper}") String phonePepper,
+            @Value("${phone.encrypt.key}") String encryptKey) {
         this.redisTemplate = redisTemplate;
         this.phoneVerificationMapper = phoneVerificationMapper;
         this.phonePepper = phonePepper;
+        this.encryptionKey = deriveKey(encryptKey);
+    }
+
+    private SecretKeySpec deriveKey(String key) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(key.getBytes(StandardCharsets.UTF_8));
+            return new SecretKeySpec(hash, "AES");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 not available", e);
+        }
     }
 
     public Map<String, Object> sendCode(String phoneNumber, Long eventId) {
@@ -85,6 +106,37 @@ public class VerificationService {
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 not available", e);
+        }
+    }
+
+    public String encryptPhone(String phoneNumber) {
+        try {
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            new SecureRandom().nextBytes(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            byte[] encrypted = cipher.doFinal(phoneNumber.getBytes(StandardCharsets.UTF_8));
+            byte[] combined = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, combined, 0, iv.length);
+            System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
+            return Base64.getEncoder().encodeToString(combined);
+        } catch (Exception e) {
+            throw new RuntimeException("Phone encryption failed", e);
+        }
+    }
+
+    public String decryptPhone(String encryptedPhone) {
+        try {
+            byte[] combined = Base64.getDecoder().decode(encryptedPhone);
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            byte[] encrypted = new byte[combined.length - GCM_IV_LENGTH];
+            System.arraycopy(combined, 0, iv, 0, GCM_IV_LENGTH);
+            System.arraycopy(combined, GCM_IV_LENGTH, encrypted, 0, encrypted.length);
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, encryptionKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+            return new String(cipher.doFinal(encrypted), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("Phone decryption failed", e);
         }
     }
 

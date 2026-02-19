@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -33,8 +34,21 @@ public class LottoController {
     private final NumberPoolService numberPoolService;
 
     @GetMapping("/events")
-    public ResponseEntity<?> getEvents() {
-        return ResponseEntity.ok(eventMapper.findAll());
+    public ResponseEntity<?> getEvents(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (size <= 0) size = 10;
+        int offset = (page - 1) * size;
+        var events = eventMapper.findAllPaged(offset, size);
+        int total = eventMapper.countAll();
+        int totalPages = (int) Math.ceil((double) total / size);
+        return ResponseEntity.ok(Map.of(
+                "events", events,
+                "page", page,
+                "size", size,
+                "total", total,
+                "totalPages", totalPages
+        ));
     }
 
     @PostMapping("/event")
@@ -42,6 +56,10 @@ public class LottoController {
         try {
             if (event.getWinnerPhoneHash() == null || event.getWinnerPhoneHash().isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "1등 당첨자 휴대폰 번호는 필수입니다."));
+            }
+            if (event.getEndAt() != null && event.getAnnounceStartAt() != null
+                    && event.getEndAt().isAfter(event.getAnnounceStartAt())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "참가 종료일은 발표 시작일 이전이어야 합니다."));
             }
             event.setWinnerPhoneHash(verificationService.hashPhone(event.getWinnerPhoneHash()));
             event.setStatus(Event.EventStatus.READY);

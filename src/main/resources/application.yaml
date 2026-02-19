@@ -20,6 +20,8 @@ spring:
 phone:
   hash:
     pepper: ${PHONE_HASH_PEPPER:default-pepper-change-me}
+  encrypt:
+    key: ${PHONE_ENCRYPT_KEY:default-encrypt-key-change-me}
 
 
 mybatis:
