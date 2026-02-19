@@ -12,4 +12,6 @@ public interface ParticipantMapper {
     Participant findByPhoneHashAndEventId(@Param("phoneHash") String phoneHash, @Param("eventId") Long eventId);
 
     int countByEventId(Long eventId);
+
+    int selectNextTicketSeq(Long eventId);
 }

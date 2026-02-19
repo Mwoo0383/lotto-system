@@ -1,5 +1,6 @@
 package com.company.lotto.domain;
 
+import com.company.lotto.domain.NumberPool.PoolResult;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +17,6 @@ public class LottoTicket {
     private Integer num4;
     private Integer num5;
     private Integer num6;
+    private PoolResult result;
     private LocalDateTime issuedAt;
 }

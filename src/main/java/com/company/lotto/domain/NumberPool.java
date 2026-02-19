@@ -17,7 +17,6 @@ public class NumberPool {
     private PoolResult result;
     private Integer isUsed;
     private Long eventId;
-    private Long usedParticipantId;
 
     public enum PoolResult {
         FIRST,      // 1등

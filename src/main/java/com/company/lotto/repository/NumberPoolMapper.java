@@ -14,7 +14,7 @@ public interface NumberPoolMapper {
 
     NumberPool findAvailableSlot(@Param("eventId") Long eventId, @Param("result") String result);
 
-    void assignSlot(@Param("poolId") Long poolId, @Param("participantId") Long participantId);
+    NumberPool findRandomAvailableSlot(@Param("eventId") Long eventId, @Param("results") List<String> results);
 
-    NumberPool findByParticipantId(@Param("participantId") Long participantId);
+    void markUsed(@Param("poolId") Long poolId);
 }

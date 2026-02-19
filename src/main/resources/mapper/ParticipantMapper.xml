@@ -37,4 +37,11 @@
         WHERE event_id = #{eventId}
     </select>
 
+    <select id="selectNextTicketSeq" resultType="int">
+        SELECT COALESCE(MAX(ticket_seq), 0) + 1
+        FROM participant
+        WHERE event_id = #{eventId}
+        FOR UPDATE
+    </select>
+
 </mapper>
