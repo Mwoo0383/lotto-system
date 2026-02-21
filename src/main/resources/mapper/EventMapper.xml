@@ -19,11 +19,11 @@
     <select id="findAllPaged" resultType="Event">
         SELECT *,
             CASE
-                WHEN NOW() &gt;= start_at AND NOW() &lt;= end_at THEN 1
+                WHEN #{now} &gt;= start_at AND #{now} &lt;= end_at THEN 1
                 WHEN announce_start_at IS NOT NULL AND announce_end_at IS NOT NULL
-                     AND NOW() &gt;= announce_start_at AND NOW() &lt;= announce_end_at THEN 2
-                WHEN end_at IS NOT NULL AND NOW() &gt; end_at
-                     AND announce_start_at IS NOT NULL AND NOW() &lt; announce_start_at THEN 3
+                     AND #{now} &gt;= announce_start_at AND #{now} &lt;= announce_end_at THEN 2
+                WHEN end_at IS NOT NULL AND #{now} &gt; end_at
+                     AND announce_start_at IS NOT NULL AND #{now} &lt; announce_start_at THEN 3
                 ELSE 4
             END AS sort_priority
         FROM event
@@ -52,8 +52,8 @@
     <select id="findAnnouncingEvent" resultType="Event">
         SELECT *
         FROM event
-        WHERE announce_start_at &lt;= NOW()
-          AND announce_end_at &gt;= NOW()
+        WHERE announce_start_at &lt;= #{now}
+          AND announce_end_at &gt;= #{now}
         ORDER BY event_id DESC
         LIMIT 1
     </select>

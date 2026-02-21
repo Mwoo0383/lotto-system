@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Map;
@@ -57,9 +58,12 @@ public class VerificationService {
     public Map<String, Object> sendCode(String phoneNumber, Long eventId) {
         String code = generateCode();
 
+        LocalDateTime now = LocalDateTime.now();
         PhoneVerification verification = new PhoneVerification();
         verification.setEventId(eventId);
         verification.setStatus(VerificationStatus.REQUESTED);
+        verification.setRequestedAt(now);
+        verification.setExpiredAt(now.plusMinutes(3));
         phoneVerificationMapper.insert(verification);
 
         String redisKey = "verification:" + verification.getVerificationId();
@@ -80,7 +84,7 @@ public class VerificationService {
         }
 
         codeStore.delete(redisKey);
-        phoneVerificationMapper.updateStatus(verificationId, VerificationStatus.VERIFIED.name());
+        phoneVerificationMapper.updateStatus(verificationId, VerificationStatus.VERIFIED.name(), LocalDateTime.now());
         return true;
     }
 

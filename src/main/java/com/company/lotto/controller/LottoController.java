@@ -10,6 +10,7 @@ import com.company.lotto.repository.EventMapper;
 import com.company.lotto.service.LottoService;
 import com.company.lotto.service.NumberPoolService;
 import com.company.lotto.service.VerificationService;
+import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class LottoController {
             @RequestParam(defaultValue = "10") int size) {
         if (size <= 0) size = 10;
         int offset = (page - 1) * size;
-        var events = eventMapper.findAllPaged(offset, size);
+        var events = eventMapper.findAllPaged(offset, size, LocalDateTime.now());
         int total = eventMapper.countAll();
         int totalPages = (int) Math.ceil((double) total / size);
         return ResponseEntity.ok(Map.of(
@@ -144,7 +145,7 @@ public class LottoController {
 
     @GetMapping("/event/announcing")
     public ResponseEntity<?> getAnnouncingEvent() {
-        Event event = eventMapper.findAnnouncingEvent();
+        Event event = eventMapper.findAnnouncingEvent(LocalDateTime.now());
         if (event == null) {
             return ResponseEntity.ok(Map.of("announcing", false));
         }

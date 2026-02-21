@@ -300,7 +300,7 @@ class LottoServiceTest {
 
             assertFalse(response.isWon());
             assertFalse(response.isFirstCheck());
-            verify(resultViewMapper).incrementViewCount(50L);
+            verify(resultViewMapper).incrementViewCount(eq(50L), any(LocalDateTime.class));
         }
 
         @Test

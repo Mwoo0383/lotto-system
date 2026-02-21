@@ -19,7 +19,7 @@
         #{phoneEncrypted},
         #{phoneLast4},
         #{ticketSeq},
-        NOW(),
+        #{createdAt},
         #{eventId}
         )
     </insert>

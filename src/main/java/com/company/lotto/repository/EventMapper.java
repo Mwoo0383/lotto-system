@@ -1,6 +1,7 @@
 package com.company.lotto.repository;
 
 import com.company.lotto.domain.Event;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -12,7 +13,7 @@ public interface EventMapper {
 
     List<Event> findAll();
 
-    List<Event> findAllPaged(@Param("offset") int offset, @Param("limit") int limit);
+    List<Event> findAllPaged(@Param("offset") int offset, @Param("limit") int limit, @Param("now") LocalDateTime now);
 
     int countAll();
 
@@ -20,7 +21,7 @@ public interface EventMapper {
 
     Event findActiveEvent();
 
-    Event findAnnouncingEvent();
+    Event findAnnouncingEvent(@Param("now") LocalDateTime now);
 
     void updateStatus(Long eventId, String status);
 }

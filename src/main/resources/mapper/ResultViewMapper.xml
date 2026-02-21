@@ -13,13 +13,13 @@
 
     <insert id="insert" parameterType="ResultView">
         INSERT INTO result_view (participant_id, view_count, first_view_at, last_view_at)
-        VALUES (#{participantId}, 1, NOW(), NOW())
+        VALUES (#{participantId}, 1, #{firstViewAt}, #{lastViewAt})
     </insert>
 
     <update id="incrementViewCount">
         UPDATE result_view
         SET view_count = view_count + 1,
-            last_view_at = NOW()
+            last_view_at = #{lastViewAt}
         WHERE participant_id = #{participantId}
     </update>
 

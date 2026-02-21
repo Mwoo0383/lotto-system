@@ -67,6 +67,7 @@ public class LottoService {
         participant.setPhoneEncrypted(verificationService.encryptPhone(phoneNumber));
         participant.setPhoneLast4(phoneLast4);
         participant.setTicketSeq(ticketSeq);
+        participant.setCreatedAt(LocalDateTime.now());
         try {
             participantMapper.insertParticipant(participant);
         } catch (DuplicateKeyException e) {
@@ -93,6 +94,7 @@ public class LottoService {
         ticket.setNum5(slot.getSlot5());
         ticket.setNum6(slot.getSlot6());
         ticket.setResult(slot.getResult());
+        ticket.setIssuedAt(LocalDateTime.now());
         lottoTicketMapper.insertTicket(ticket);
 
         List<Integer> lottoNumbers = List.of(
@@ -162,11 +164,14 @@ public class LottoService {
                     ticket.getNum4(), ticket.getNum5(), ticket.getNum6()
             ));
 
+            LocalDateTime viewNow = LocalDateTime.now();
             ResultView newView = new ResultView();
             newView.setParticipantId(participant.getParticipantId());
+            newView.setFirstViewAt(viewNow);
+            newView.setLastViewAt(viewNow);
             resultViewMapper.insert(newView);
         } else {
-            resultViewMapper.incrementViewCount(participant.getParticipantId());
+            resultViewMapper.incrementViewCount(participant.getParticipantId(), LocalDateTime.now());
         }
 
         return response;

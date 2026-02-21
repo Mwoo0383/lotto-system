@@ -1,6 +1,7 @@
 package com.company.lotto.repository;
 
 import com.company.lotto.domain.ResultView;
+import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,5 +12,5 @@ public interface ResultViewMapper {
 
     void insert(ResultView resultView);
 
-    void incrementViewCount(@Param("participantId") Long participantId);
+    void incrementViewCount(@Param("participantId") Long participantId, @Param("lastViewAt") LocalDateTime lastViewAt);
 }
