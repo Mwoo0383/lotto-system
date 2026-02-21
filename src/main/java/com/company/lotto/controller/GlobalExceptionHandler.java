@@ -13,21 +13,28 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException e) {
+        return ResponseEntity.notFound().build();
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException e) {
-        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<Map<String, String>> handleDuplicateKey(DuplicateKeyException e) {
         log.warn("중복 키 충돌: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "이미 참가한 번호입니다."));
+                .body(Map.of("error", "이미 참가한 사용자입니다."));
     }
 
     @ExceptionHandler(Exception.class)
@@ -36,12 +43,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 오류가 발생했습니다."));
     }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<?> handleNoResource(NoResourceFoundException e) {
-        log.error("잘못된 요청.", e);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "잘못된 요청입니다."));
-    }
-
 }

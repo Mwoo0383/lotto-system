@@ -198,7 +198,7 @@
 
         async function loadEvent() {
             try {
-                const res = await fetch(`/api/event/${eventId}`);
+                const res = await fetch(`/api/events/${eventId}`);
                 if (!res.ok) throw new Error('이벤트를 찾을 수 없습니다.');
                 const data = await res.json();
                 document.getElementById('event-name').textContent = data.name;
