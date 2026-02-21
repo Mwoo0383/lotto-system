@@ -1,5 +1,6 @@
 package com.company.lotto.service;
 
+import com.company.lotto.config.CodeStore;
 import com.company.lotto.domain.PhoneVerification;
 import com.company.lotto.domain.PhoneVerification.VerificationStatus;
 import com.company.lotto.repository.PhoneVerificationMapper;
@@ -16,13 +17,12 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class VerificationService {
 
-    private final StringRedisTemplate redisTemplate;
+    private final CodeStore codeStore;
     private final PhoneVerificationMapper phoneVerificationMapper;
     private final String phonePepper;
     private final SecretKeySpec encryptionKey;
@@ -34,11 +34,11 @@ public class VerificationService {
     private static final int GCM_TAG_LENGTH = 128;
 
     public VerificationService(
-            StringRedisTemplate redisTemplate,
+            CodeStore codeStore,
             PhoneVerificationMapper phoneVerificationMapper,
             @Value("${phone.hash.pepper}") String phonePepper,
             @Value("${phone.encrypt.key}") String encryptKey) {
-        this.redisTemplate = redisTemplate;
+        this.codeStore = codeStore;
         this.phoneVerificationMapper = phoneVerificationMapper;
         this.phonePepper = phonePepper;
         this.encryptionKey = deriveKey(encryptKey);
@@ -63,7 +63,7 @@ public class VerificationService {
         phoneVerificationMapper.insert(verification);
 
         String redisKey = "verification:" + verification.getVerificationId();
-        redisTemplate.opsForValue().set(redisKey, code, CODE_TTL);
+        codeStore.save(redisKey, code, CODE_TTL);
 
         return Map.of(
                 "verificationId", verification.getVerificationId(),
@@ -73,13 +73,13 @@ public class VerificationService {
 
     public boolean verifyCode(Long verificationId, String code) {
         String redisKey = "verification:" + verificationId;
-        String storedCode = redisTemplate.opsForValue().get(redisKey);
+        String storedCode = codeStore.get(redisKey);
 
         if (storedCode == null || !storedCode.equals(code)) {
             return false;
         }
 
-        redisTemplate.delete(redisKey);
+        codeStore.delete(redisKey);
         phoneVerificationMapper.updateStatus(verificationId, VerificationStatus.VERIFIED.name());
         return true;
     }
