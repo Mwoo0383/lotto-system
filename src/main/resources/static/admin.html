@@ -1,246 +1,71 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>이벤트 관리</title>
-    <link rel="stylesheet" href="/css/lotto.css">
-    <style>
-        .container { max-width: 640px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 6px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus { border-color: #4a90d9; }
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        .event-list { display: flex; flex-direction: column; gap: 12px; }
-        .event-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 16px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
-        .event-item-info h3 { font-size: 15px; margin-bottom: 4px; }
-        .event-item-info p { font-size: 12px; color: #888; }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #fff;
-        }
-        .badge-ready { background: #f39c12; }
-        .badge-active { background: #27ae60; }
-        .badge-ended { background: #95a5a6; }
-        .event-actions { display: flex; gap: 6px; align-items: center; }
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #fff;
-            background: #4a90d9;
-        }
-        .btn-small:hover { background: #3a7bc8; }
-        .btn-small:disabled { background: #ccc; cursor: not-allowed; }
-        .success-msg {
-            background: #eafaf1;
-            color: #27ae60;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 8px;
-            color: #4a90d9;
-            text-decoration: none;
-            font-size: 14px;
-        }
-    </style>
+
+    <link rel="stylesheet" href="/css/lotto.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <script src="/js/admin.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>이벤트 관리</h1>
-            <a href="/" class="back-link">메인으로 돌아가기</a>
-        </div>
-
-        <!-- 이벤트 등록 폼 -->
-        <div class="card">
-            <div class="section-title">새 이벤트 등록</div>
-            <form id="event-form">
-                <div class="form-group">
-                    <label>이벤트명</label>
-                    <input type="text" id="name" required placeholder="예: 2026 신년 로또 이벤트">
-                </div>
-                <div class="form-group">
-                    <label>이벤트 시작일시</label>
-                    <input type="datetime-local" id="startAt" required>
-                </div>
-                <div class="form-group">
-                    <label>이벤트 종료일시</label>
-                    <input type="datetime-local" id="endAt" required>
-                </div>
-                <div class="form-group">
-                    <label>당첨 발표 시작일시</label>
-                    <input type="datetime-local" id="announceStartAt" required>
-                </div>
-                <div class="form-group">
-                    <label>당첨 발표 종료일시</label>
-                    <input type="datetime-local" id="announceEndAt" required>
-                </div>
-                <div class="form-group">
-                    <label>1등 당첨자 휴대폰 번호</label>
-                    <input type="tel" id="winnerPhone" required placeholder="01012345678">
-                </div>
-                <button type="submit" class="btn-primary" id="btn-create">이벤트 등록</button>
-            </form>
-            <div id="create-result" class="hidden"></div>
-        </div>
-
-        <!-- 이벤트 목록 -->
-        <div class="card">
-            <div class="section-title">등록된 이벤트</div>
-            <div id="event-list" class="event-list">
-                <p style="color:#999; text-align:center;">불러오는 중...</p>
-            </div>
-        </div>
-
-        <div id="error-message" class="error hidden"></div>
+<div class="container">
+    <div class="card">
+        <h1>이벤트 관리</h1>
+        <a href="/" class="back-link">메인으로 돌아가기</a>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            loadEvents();
-            document.getElementById('event-form').addEventListener('submit', createEvent);
-        });
+    <!-- 이벤트 등록 폼 -->
+    <div class="card">
+        <div class="section-title">새 이벤트 등록</div>
 
-        async function createEvent(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-create');
-            btn.disabled = true;
-            hideResult();
+        <form id="event-form">
+            <div class="form-group">
+                <label for="name">이벤트명</label>
+                <input type="text" id="name" required placeholder="예: 2026 신년 로또 이벤트" />
+            </div>
 
-            const body = {
-                name: document.getElementById('name').value,
-                startAt: document.getElementById('startAt').value,
-                endAt: document.getElementById('endAt').value,
-                announceStartAt: document.getElementById('announceStartAt').value,
-                announceEndAt: document.getElementById('announceEndAt').value
-            };
+            <div class="form-group">
+                <label for="startAt">이벤트 시작일시</label>
+                <input type="datetime-local" id="startAt" required />
+            </div>
 
-            body.winnerPhoneHash = document.getElementById('winnerPhone').value.trim();
+            <div class="form-group">
+                <label for="endAt">이벤트 종료일시</label>
+                <input type="datetime-local" id="endAt" required />
+            </div>
 
-            if (body.endAt >= body.announceStartAt) {
-                showResult('error', '참가 종료일은 발표 시작일보다 이전이어야 합니다.');
-                btn.disabled = false;
-                return;
-            }
+            <div class="form-group">
+                <label for="announceStartAt">당첨 발표 시작일시</label>
+                <input type="datetime-local" id="announceStartAt" required />
+            </div>
 
-            try {
-                const res = await fetch('/api/event', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || '등록 실패');
+            <div class="form-group">
+                <label for="announceEndAt">당첨 발표 종료일시</label>
+                <input type="datetime-local" id="announceEndAt" required />
+            </div>
 
-                window.location.href = '/';
-                return;
-            } catch (err) {
-                showResult('error', err.message);
-                btn.disabled = false;
-            }
-        }
+            <div class="form-group">
+                <label for="winnerPhone">1등 당첨자 휴대폰 번호</label>
+                <input type="tel" id="winnerPhone" required placeholder="01012345678" />
+            </div>
 
-        async function loadEvents() {
-            try {
-                const res = await fetch('/api/events?size=100');
-                const data = await res.json();
-                const events = data.events;
-                const listEl = document.getElementById('event-list');
+            <button type="submit" class="btn-primary" id="btn-create">이벤트 등록</button>
+        </form>
 
-                if (events.length === 0) {
-                    listEl.innerHTML = '<p style="color:#999; text-align:center;">등록된 이벤트가 없습니다.</p>';
-                    return;
-                }
+        <div id="create-result" class="hidden"></div>
+    </div>
 
-                listEl.innerHTML = events.map(ev => `
-                    <div class="event-item">
-                        <div class="event-item-info">
-                            <h3>${ev.name}</h3>
-                            <p>${formatDt(ev.startAt)} ~ ${formatDt(ev.endAt)}</p>
-                        </div>
-                        <div class="event-actions">
-                            <span class="badge badge-${ev.status.toLowerCase()}">${statusLabel(ev.status)}</span>
-                            ${ev.status === 'READY' ? `<button class="btn-small" onclick="generatePool(${ev.eventId}, this)">풀 생성</button>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) {
-                document.getElementById('event-list').innerHTML =
-                    '<p style="color:#e74c3c; text-align:center;">목록을 불러올 수 없습니다.</p>';
-            }
-        }
+    <!-- 이벤트 목록 -->
+    <div class="card">
+        <div class="section-title">등록된 이벤트</div>
+        <div id="event-list" class="event-list">
+            <p style="color:#999; text-align:center;">불러오는 중...</p>
+        </div>
+    </div>
 
-        async function generatePool(eventId, btn) {
-            btn.disabled = true;
-            btn.textContent = '생성 중...';
-            try {
-                const res = await fetch(`/api/event/${eventId}/generate-pool`, { method: 'POST' });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || '풀 생성 실패');
-                loadEvents();
-            } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
-                btn.textContent = '풀 생성';
-            }
-        }
-
-        function formatDt(dt) {
-            if (!dt) return '';
-            return dt.replace('T', ' ').substring(0, 16);
-        }
-
-        function statusLabel(status) {
-            return { READY: '준비중', ACTIVE: '진행중', ENDED: '종료' }[status] || status;
-        }
-
-        function showResult(type, msg) {
-            const el = document.getElementById('create-result');
-            el.className = type === 'success' ? 'success-msg' : 'error';
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-
-        function hideResult() {
-            document.getElementById('create-result').classList.add('hidden');
-        }
-    </script>
+    <div id="error-message" class="error hidden"></div>
+</div>
 </body>
 </html>

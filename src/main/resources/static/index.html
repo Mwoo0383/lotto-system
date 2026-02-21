@@ -5,53 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로또 당첨 시스템</title>
     <link rel="stylesheet" href="/css/lotto.css">
-    <style>
-        body {
-            align-items: center;
-        }
-        .hero {
-            text-align: center;
-            padding: 40px 24px;
-        }
-        .hero h1 {
-            font-size: 28px;
-            margin-bottom: 12px;
-        }
-        .hero p {
-            color: #666;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 24px;
-        }
-        .nav-links a {
-            display: block;
-            padding: 14px;
-            background: #4a90d9;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            text-align: center;
-            transition: background-color 0.2s;
-        }
-        .nav-links a:hover {
-            background: #3a7bc8;
-        }
-        .nav-links a.secondary {
-            background: #fff;
-            color: #4a90d9;
-            border: 1px solid #4a90d9;
-        }
-        .nav-links a.secondary:hover {
-            background: #f0f7ff;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="/js/index.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -63,36 +18,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const today = new Date().toISOString().slice(0, 10);
-            const visitKey = 'lastVisitDate';
-            const lastVisit = localStorage.getItem(visitKey);
-
-            if (lastVisit === today) return;
-
-            try {
-                // 발표 기간 우선 체크
-                const announceRes = await fetch('/api/event/announcing');
-                const announceData = await announceRes.json();
-                if (announceData.announcing) {
-                    localStorage.setItem(visitKey, today);
-                    location.href = '/result.html?eventId=' + announceData.eventId;
-                    return;
-                }
-
-                // 이벤트 진행 기간 체크
-                const res = await fetch('/api/event/active');
-                const data = await res.json();
-                if (data.active) {
-                    localStorage.setItem(visitKey, today);
-                    location.href = '/events.html';
-                }
-            } catch (e) {
-                // ignore
-            }
-        });
-    </script>
 </body>
 </html>

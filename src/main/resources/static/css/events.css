@@ -1,0 +1,159 @@
+.page-header {
+    text-align: center;
+    padding: 32px 24px 16px;
+}
+.page-header h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+.page-header p {
+    color: #666;
+    font-size: 14px;
+}
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+    padding-left: 4px;
+}
+.event-item {
+    padding: 20px;
+    margin-bottom: 12px;
+}
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.event-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #222;
+}
+.badges {
+    display: flex;
+    gap: 4px;
+}
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.badge-ready {
+    background: #fff3cd;
+    color: #856404;
+}
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+.badge-ended {
+    background: #e2e3e5;
+    color: #6c757d;
+}
+.badge-review {
+    background: #f8d7da;
+    color: #721c24;
+}
+.badge-announcing {
+    background: #cce5ff;
+    color: #004085;
+}
+.event-periods {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+.event-periods .label {
+    display: inline-block;
+    width: 70px;
+    color: #666;
+    font-weight: 500;
+}
+.event-periods .current {
+    color: #333;
+    font-weight: 600;
+}
+.event-actions {
+    display: flex;
+    gap: 8px;
+}
+.event-actions a {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-participate {
+    background: #4a90d9;
+    color: #fff;
+}
+.btn-participate:hover {
+    background: #3a7bc8;
+}
+.btn-result {
+    background: #fff;
+    color: #004085;
+    border: 1px solid #004085;
+}
+.btn-result:hover {
+    background: #e8f0fe;
+}
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 24px;
+    font-size: 14px;
+}
+.back-link {
+    text-align: center;
+    margin-top: 8px;
+}
+.back-link a {
+    color: #4a90d9;
+    text-decoration: none;
+    font-size: 14px;
+}
+.back-link a:hover {
+    text-decoration: underline;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+}
+.pagination button {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+}
+.pagination button:hover:not(:disabled) {
+    background: #f0f7ff;
+    border-color: #4a90d9;
+}
+.pagination button.active {
+    background: #4a90d9;
+    color: #fff;
+    border-color: #4a90d9;
+}
+.pagination button:disabled {
+    color: #ccc;
+    cursor: default;
+}
