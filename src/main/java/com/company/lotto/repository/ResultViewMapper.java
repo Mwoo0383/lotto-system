@@ -14,5 +14,6 @@ public interface ResultViewMapper {
     // 결과 최초 조회 기록 생성
     void insert(ResultView resultView);
 
+    // 결과 조회 이력 UPSERT
     void upsertView(@Param("participantId") Long participantId, @Param("now") LocalDateTime now);
 }
