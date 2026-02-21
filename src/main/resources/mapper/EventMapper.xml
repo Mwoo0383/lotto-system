@@ -109,4 +109,20 @@
         WHERE event_id = #{eventId}
     </update>
 
+    <update id="activateReadyEvents">
+        UPDATE event
+        SET status = 'ACTIVE'
+        WHERE status = 'READY'
+        AND start_at <![CDATA[<=]]> #{now}
+        AND end_at   <![CDATA[>]]>  #{now}
+    </update>
+
+    <update id="endActiveEvents">
+        UPDATE event
+        SET status = 'ENDED'
+        WHERE status = 'ACTIVE'
+        AND announce_end_at <![CDATA[<]]> #{now}
+    </update>
+
+
 </mapper>

@@ -32,4 +32,8 @@ public interface EventMapper {
 
     // 이벤트 상태 변경
     void updateStatus(Long eventId, String status);
+
+    // 자동 상태 전환용 (스케줄러 전용)
+    int activateReadyEvents(@Param("now") LocalDateTime now);
+    int endActiveEvents(@Param("now") LocalDateTime now);
 }
