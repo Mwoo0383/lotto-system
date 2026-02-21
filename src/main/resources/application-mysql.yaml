@@ -1,4 +1,8 @@
 spring:
+  config:
+    activate:
+      on-profile: mysql
+
   datasource:
     url: ${LOTTO_DB_URL}
     username: ${LOTTO_DB_USERNAME}

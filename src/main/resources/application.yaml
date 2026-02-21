@@ -1,6 +1,8 @@
 spring:
   application:
     name: lotto
+  profiles:
+    active: mysql
 
   data:
     redis:

@@ -1,4 +1,8 @@
 spring:
+  config:
+    activate:
+      on-profile: h2
+
   datasource:
     url: jdbc:h2:mem:lotto;MODE=MYSQL;DB_CLOSE_DELAY=-1
     username: sa
