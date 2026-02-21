@@ -56,26 +56,35 @@ public class LottoService {
             throw new IllegalStateException("이미 참가한 번호입니다.");
         }
 
-        // 4. ticket_seq 부여 (FOR UPDATE로 동시성 안전)
-        int ticketSeq = participantMapper.selectNextTicketSeq(eventId);
-
-        // 5. participant 저장 (UNIQUE INDEX로 race condition 최종 방어)
+        // 4. participant 저장 (ticket_seq 충돌 시 재시도, UNIQUE INDEX로 동시성 방어)
         String phoneLast4 = phoneNumber.substring(phoneNumber.length() - 4);
+        String phoneEncrypted = verificationService.encryptPhone(phoneNumber);
         Participant participant = new Participant();
         participant.setEventId(eventId);
         participant.setPhoneHash(phoneHash);
-        participant.setPhoneEncrypted(verificationService.encryptPhone(phoneNumber));
+        participant.setPhoneEncrypted(phoneEncrypted);
         participant.setPhoneLast4(phoneLast4);
-        participant.setTicketSeq(ticketSeq);
-        participant.setCreatedAt(LocalDateTime.now());
-        try {
-            participantMapper.insertParticipant(participant);
-        } catch (DuplicateKeyException e) {
-            throw new IllegalStateException("이미 참가한 번호입니다.");
+
+        int maxRetries = 3;
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
+            int ticketSeq = participantMapper.selectNextTicketSeq(eventId);
+            participant.setTicketSeq(ticketSeq);
+            participant.setCreatedAt(LocalDateTime.now());
+            try {
+                participantMapper.insertParticipant(participant);
+                break;
+            } catch (DuplicateKeyException e) {
+                if (participantMapper.findByPhoneHashAndEventId(phoneHash, eventId) != null) {
+                    throw new IllegalStateException("이미 참가한 번호입니다.");
+                }
+                if (attempt == maxRetries - 1) {
+                    throw new IllegalStateException("참가 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+                }
+            }
         }
 
-        // 6. 슬롯 배정 (자격 범위 내 남은 슬롯에서 확률적 배정)
-        List<String> eligibleResults = getEligibleResults(phoneHash, event, ticketSeq);
+        // 5. 슬롯 배정 (자격 범위 내 남은 슬롯에서 확률적 배정)
+        List<String> eligibleResults = getEligibleResults(phoneHash, event, participant.getTicketSeq());
         NumberPool slot = numberPoolMapper.findRandomAvailableSlot(eventId, eligibleResults);
 
         if (slot == null) {
