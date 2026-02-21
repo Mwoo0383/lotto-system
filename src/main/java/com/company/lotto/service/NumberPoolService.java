@@ -59,15 +59,15 @@ public class NumberPoolService {
             throw new IllegalArgumentException("존재하지 않는 이벤트입니다.");
         }
 
-        // 2) 슬롯은 READY 상태에서만 생성 가능
-        if (event.getStatus() != Event.EventStatus.READY) {
-            throw new IllegalStateException("준비중 상태의 이벤트만 슬롯을 생성할 수 있습니다.");
-        }
+        // 2) 이미 슬롯이 생성된 이벤트면 중복 생성 방지
+        int existing = numberPoolMapper.countByEventId(eventId);
+            if (existing > 0) return;
 
-        // 3) 이미 슬롯이 생성된 이벤트면 중복 생성 방지
-        if (numberPoolMapper.countByEventId(eventId) > 0) {
-            throw new IllegalStateException("이미 슬롯이 생성된 이벤트입니다.");
-        }
+        // 3) 슬롯은 READY/ACTIVE 상태에서만 생성 가능
+        Event.EventStatus status = event.getStatus();
+            if (status != Event.EventStatus.READY && status != Event.EventStatus.ACTIVE) {
+                throw new IllegalStateException("READY/ACTIVE 상태의 이벤트만 슬롯을 생성할 수 있습니다.");
+            }
 
         // 기준이 되는 "당첨 번호" 6개 생성 (오름차순 정렬)
         List<Integer> winningNumbers = generateWinningNumbers();
@@ -134,7 +134,9 @@ public class NumberPoolService {
         }
 
         // 5) 슬롯 생성이 끝났으니 이벤트를 ACTIVE로 전환
-        eventMapper.updateStatus(eventId, Event.EventStatus.ACTIVE.name());
+        if (status == Event.EventStatus.READY) {
+                eventMapper.updateStatus(eventId, Event.EventStatus.ACTIVE.name());
+            }
     }
 
     /**
