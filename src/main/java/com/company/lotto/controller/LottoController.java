@@ -55,9 +55,18 @@ public class LottoController {
         if (event.getWinnerPhoneHash() == null || event.getWinnerPhoneHash().isBlank()) {
             throw new IllegalArgumentException("1등 당첨자 휴대폰 번호는 필수입니다.");
         }
-        if (event.getEndAt() != null && event.getAnnounceStartAt() != null
-                && event.getEndAt().isAfter(event.getAnnounceStartAt())) {
-            throw new IllegalArgumentException("참가 종료일은 발표 시작일 이전이어야 합니다.");
+        if (event.getStartAt() == null || event.getEndAt() == null
+                || event.getAnnounceStartAt() == null || event.getAnnounceEndAt() == null) {
+            throw new IllegalArgumentException("참가 시작/종료, 발표 시작/종료 일시는 필수입니다.");
+        }
+        if (!event.getStartAt().isBefore(event.getEndAt())) {
+            throw new IllegalArgumentException("참가 시작일은 참가 종료일보다 이전이어야 합니다.");
+        }
+        if (!event.getEndAt().isBefore(event.getAnnounceStartAt())) {
+            throw new IllegalArgumentException("참가 종료일은 발표 시작일보다 이전이어야 합니다.");
+        }
+        if (!event.getAnnounceStartAt().isBefore(event.getAnnounceEndAt())) {
+            throw new IllegalArgumentException("발표 시작일은 발표 종료일보다 이전이어야 합니다.");
         }
         event.setWinnerPhoneHash(verificationService.hashPhone(event.getWinnerPhoneHash()));
         event.setStatus(Event.EventStatus.READY);

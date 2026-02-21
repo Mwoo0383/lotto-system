@@ -27,8 +27,8 @@ async function loadEvent() {
 
 async function sendCode() {
     const phoneNumber = document.getElementById('phone-number').value.trim();
-    if (!/^01[016789]\d{7,8}$/.test(phoneNumber)) {
-        showError('올바른 휴대폰 번호를 입력해주세요.');
+    if (!/^010\d{8}$/.test(phoneNumber)) {
+        showError('010으로 시작하는 11자리 번호를 입력해주세요.');
         return;
     }
 
@@ -122,8 +122,8 @@ async function participate() {
             .join('');
     } catch (e) {
         showError(e.message);
-        btn.disabled = false;
-        btn.textContent = '로또 번호 받기';
+        document.getElementById('step-participate').classList.add('hidden');
+        document.getElementById('error-back').classList.remove('hidden');
     }
 }
 
