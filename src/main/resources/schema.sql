@@ -90,5 +90,6 @@ CREATE TABLE result_view (
     first_view_at           DATETIME                                            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_view_at            DATETIME                                            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (participant_id),
+    INDEX idx_view_participant (participant_id),
     CONSTRAINT fk_result_view_participant FOREIGN KEY (participant_id) REFERENCES participant (participant_id)
 );

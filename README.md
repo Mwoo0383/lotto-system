@@ -6,35 +6,21 @@
 
 - **Java 17** / **Spring Boot 4.0.2**
 - **MyBatis 4.0.1**
-- **MySQL**
+- **MySQL,H2**
 - **Redis** (인증번호 캐싱, 3분 TTL)
 
-## 실행 방법
+## 환경 변수
 
-### 환경 변수
+| 변수 | 설명 | 기본값                |
+|------|------|--------------------|
+| `LOTTO_DB_URL` | MySQL JDBC URL | (필수)               |
+| `LOTTO_DB_USERNAME` | DB 사용자명 | (필수)               |
+| `LOTTO_DB_PASSWORD` | DB 비밀번호 | (필수)               |
+| `REDIS_HOST` | Redis 호스트 | `upstash endpoint` |
+| `REDIS_PORT` | Redis 포트 | `6379`             |
+| `PHONE_HASH_PEPPER` | 전화번호 해시 Pepper | (필수, 운영 시 변경)      |
+| `PHONE_ENCRYPT_KEY` | 전화번호 암호화 키 | (필수, 운영 시 변경)      |
 
-| 변수 | 설명 | 기본값 |
-|------|------|--------|
-| `LOTTO_DB_URL` | MySQL JDBC URL | (필수) |
-| `LOTTO_DB_USERNAME` | DB 사용자명 | (필수) |
-| `LOTTO_DB_PASSWORD` | DB 비밀번호 | (필수) |
-| `REDIS_HOST` | Redis 호스트 | `localhost` |
-| `REDIS_PORT` | Redis 포트 | `6379` |
-| `PHONE_HASH_PEPPER` | 전화번호 해시 Pepper | (필수, 운영 시 변경) |
-| `PHONE_ENCRYPT_KEY` | 전화번호 암호화 키 | (필수, 운영 시 변경) |
-
-### 실행
-
-```bash
-# 테이블 생성 (최초 1회)
-mysql -u root -p < src/main/resources/schema.sql
-
-# 애플리케이션 실행
-./gradlew bootRun
-
-# 테스트 실행
-./gradlew test
-```
 
 서버는 `http://localhost:8080`에서 구동된다.
 
@@ -71,14 +57,14 @@ ticketSeq에 따라 자격 범위가 결정되고, 해당 범위 내 남은 슬�
 
 ### 이벤트
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| GET | `/api/events?page=1&size=10` | 이벤트 목록 (페이지네이션) |
-| POST | `/api/event` | 이벤트 생성 + 번호 풀 자동 생성 |
-| GET | `/api/event/{eventId}` | 이벤트 상세 |
-| GET | `/api/event/active` | 현재 진행 중인 이벤트 |
-| GET | `/api/event/announcing` | 현재 발표 중인 이벤트 |
-| POST | `/api/event/{eventId}/generate-pool` | 번호 풀 재생성 |
+| Method | Endpoint                              | 설명 |
+|--------|---------------------------------------|------|
+| GET | `/api/events?page=1&size=10`          | 이벤트 목록 (페이지네이션) |
+| POST | `/api/events`                         | 이벤트 생성 + 번호 풀 자동 생성 |
+| GET | `/api/events/{eventId}`               | 이벤트 상세 |
+| GET | `/api/events/active`                  | 현재 진행 중인 이벤트 |
+| GET | `/api/events/announcing`              | 현재 발표 중인 이벤트 |
+| POST | `/api/events/{eventId}/generate-pool` | 번호 풀 재생성 |
 
 ### 인증
 
@@ -105,8 +91,34 @@ event
  │    └── sms_log       # SMS 발송 이력
  └── phone_verification # 휴대폰 인증 요청
 ```
+### ERD
+![lotto-erd.png](image/lotto-erd.png)
+
 
 전체 DDL은 [`src/main/resources/schema.sql`](src/main/resources/schema.sql) 참고.
+
+## 프로젝트 구조
+
+```
+src/main/java/com/company/lotto/
+├── controller/
+│   ├── LottoController.java          # REST API
+│   └── GlobalExceptionHandler.java   # 글로벌 예외 처리
+├── service/
+│   ├── LottoService.java             # 참가/결과 조회 비즈니스 로직
+│   ├── NumberPoolService.java        # 번호 풀 생성
+│   └── VerificationService.java      # 인증/해시/암호화
+├── config/                           # 설정 파일
+├── scheduler/                        # 시간 스케줄러
+├── repository/                       # MyBatis Mapper 인터페이스
+├── domain/                           # 엔티티
+└── dto/                              # 요청/응답 DTO
+
+src/main/resources/
+├── application.yaml
+├── schema.sql                        # DDL
+└── mapper/                           # MyBatis XML
+```
 
 ## 동시성 처리
 
@@ -128,45 +140,3 @@ event
 | `phone_encrypted` | 복호화 필요 시 | AES-GCM (랜덤 IV) |
 | `phone_last4` | 화면 표시용 | 뒷 4자리 평문 |
 
-## 예외 처리
-
-`@RestControllerAdvice`로 일관된 에러 응답을 반환한다.
-
-| 예외 | HTTP 상태 | 응답 |
-|------|-----------|------|
-| `IllegalArgumentException` | 400 | `{ "error": "메시지" }` |
-| `IllegalStateException` | 400 | `{ "error": "메시지" }` |
-| `DuplicateKeyException` | 409 | `{ "error": "이미 참가한 번호입니다." }` |
-| `Exception` | 500 | `{ "error": "서버 오류가 발생했습니다." }` |
-
-## 테스트
-
-```bash
-./gradlew test
-```
-
-`LottoServiceTest` — Mockito 기반 단위 테스트 18개 케이스:
-- 참가 정상/실패 (미인증, 이벤트 없음, 비활성, 중복, 슬롯 소진)
-- 자격 범위 결정 (`getEligibleResults`) 구간별 검증
-- 결과 조회 정상/실패 (첫 조회, 재조회, 발표 기간 전, 참가 이력 없음)
-
-## 프로젝트 구조
-
-```
-src/main/java/com/company/lotto/
-├── controller/
-│   ├── LottoController.java          # REST API
-│   └── GlobalExceptionHandler.java   # 글로벌 예외 처리
-├── service/
-│   ├── LottoService.java             # 참가/결과 조회 비즈니스 로직
-│   ├── NumberPoolService.java        # 번호 풀 생성
-│   └── VerificationService.java      # 인증/해시/암호화
-├── repository/                        # MyBatis Mapper 인터페이스
-├── domain/                            # 엔티티
-└── dto/                               # 요청/응답 DTO
-
-src/main/resources/
-├── application.yaml
-├── schema.sql                         # DDL
-└── mapper/                            # MyBatis XML
-```
