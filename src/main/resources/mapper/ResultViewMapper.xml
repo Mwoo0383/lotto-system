@@ -5,22 +5,59 @@
 
 <mapper namespace="com.company.lotto.repository.ResultViewMapper">
 
+    <!--
+        참가자 기준 결과 조회 이력 조회
+        - participant_id 기준 단건 조회
+        - 결과를 한 번이라도 조회했는지 확인하는 용도
+    -->
     <select id="findByParticipantId" resultType="ResultView">
         SELECT *
         FROM result_view
         WHERE participant_id = #{participantId}
     </select>
 
+    <!--
+        결과 최초 조회 기록 생성
+        - 아직 조회 이력이 없는 경우 사용
+        - view_count = 1 : 첫 조회
+        - first_view_at / last_view_at : 최초 조회 시각 기록
+    -->
     <insert id="insert" parameterType="ResultView">
         INSERT INTO result_view (participant_id, view_count, first_view_at, last_view_at)
         VALUES (#{participantId}, 1, #{firstViewAt}, #{lastViewAt})
     </insert>
 
+    <!--
+        결과 재조회 시 조회 수 증가
+        - view_count + 1
+        - last_view_at 갱신
+    -->
     <update id="incrementViewCount">
         UPDATE result_view
         SET view_count = view_count + 1,
             last_view_at = #{lastViewAt}
         WHERE participant_id = #{participantId}
     </update>
+
+    <!--
+        결과 조회 이력 UPSERT - 첫 조회 시 view_count 1, 재조회 시 view_count 1씩 증가
+    -->
+    <insert id="upsertView">
+        INSERT INTO result_view (
+        participant_id,
+        view_count,
+        first_view_at,
+        last_view_at
+        )
+        VALUES (
+        #{participantId},
+        1,
+        #{now},
+        #{now}
+        )
+        ON DUPLICATE KEY UPDATE
+        view_count = view_count + 1,
+        last_view_at = #{now}
+    </insert>
 
 </mapper>

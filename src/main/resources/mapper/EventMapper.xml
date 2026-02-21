@@ -5,17 +5,41 @@
 
 <mapper namespace="com.company.lotto.repository.EventMapper">
 
+    <!--
+        이벤트 생성
+        - Event 객체를 파라미터로 받아 event 테이블에 INSERT
+        - useGeneratedKeys=true : DB에서 생성된 PK(event_id)를 가져옴
+        - keyProperty="eventId" : 생성된 PK를 Event.eventId 필드에 자동 세팅
+    -->
     <insert id="insertEvent" parameterType="Event" useGeneratedKeys="true" keyProperty="eventId">
         INSERT INTO event (name, start_at, end_at, announce_start_at, announce_end_at, status, winner_phone_hash)
         VALUES (#{name}, #{startAt}, #{endAt}, #{announceStartAt}, #{announceEndAt}, #{status}, #{winnerPhoneHash})
     </insert>
 
+    <!--
+        전체 이벤트 목록 조회
+        - 최신 이벤트가 위로 오도록 event_id 내림차순 정렬
+    -->
     <select id="findAll" resultType="Event">
         SELECT *
         FROM event
         ORDER BY event_id DESC
     </select>
 
+    <!--
+        페이징 + 상태 기반 정렬 조회
+        sort_priority 설명:
+        1 : 현재 진행 중인 이벤트 (start_at ~ end_at)
+        2 : 당첨자 발표 중인 이벤트 (announce_start_at ~ announce_end_at)
+        3 : 이벤트 종료 후, 발표 전 대기 상태
+        4 : 그 외 (완전히 종료되었거나 미래 이벤트)
+
+        정렬 우선순위:
+        1) sort_priority 오름차순 (중요한 이벤트 먼저)
+        2) event_id 내림차순 (최신 이벤트 우선)
+
+        LIMIT / OFFSET : 페이지네이션 처리
+    -->
     <select id="findAllPaged" resultType="Event">
         SELECT *,
             CASE
@@ -31,16 +55,28 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <!--
+        전체 이벤트 개수 조회
+        - 페이징 시 전체 페이지 수 계산용
+    -->
     <select id="countAll" resultType="int">
         SELECT COUNT(*) FROM event
     </select>
 
+    <!--
+        이벤트 단건 조회 (PK 기준)
+    -->
     <select id="findById" resultType="Event">
         SELECT *
         FROM event
         WHERE event_id = #{eventId}
     </select>
 
+    <!--
+        현재 활성화된 이벤트 조회
+        - status = 'ACTIVE'
+        - 가장 최근 이벤트 1건만 조회
+    -->
     <select id="findActiveEvent" resultType="Event">
         SELECT *
         FROM event
@@ -49,6 +85,11 @@
         LIMIT 1
     </select>
 
+    <!--
+        당첨자 발표 중인 이벤트 조회
+        - 현재 시간이 announce_start_at ~ announce_end_at 사이인 이벤트
+        - 가장 최근 이벤트 1건만 조회
+    -->
     <select id="findAnnouncingEvent" resultType="Event">
         SELECT *
         FROM event
@@ -58,6 +99,10 @@
         LIMIT 1
     </select>
 
+    <!--
+        이벤트 상태 변경
+        - 특정 event_id의 status 컬럼 업데이트
+    -->
     <update id="updateStatus">
         UPDATE event
         SET status = #{status}

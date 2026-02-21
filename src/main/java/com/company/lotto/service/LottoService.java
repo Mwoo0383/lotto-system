@@ -156,15 +156,23 @@ public class LottoService {
             throw new IllegalStateException("발급된 티켓이 없습니다.");
         }
 
-        ResultView resultView = resultViewMapper.findByParticipantId(participant.getParticipantId());
-        boolean isFirstCheck = resultView == null;
         boolean won = ticket.getResult() != PoolResult.NONE;
 
+        // 1) 조회 기록을 UPSERT로 원자적으로 처리 (없으면 insert, 있으면 view_count + 1)
+        LocalDateTime viewNow = LocalDateTime.now();
+        resultViewMapper.upsertView(participant.getParticipantId(), viewNow);
+
+        // 2) view_count가 1이면 "이번 호출이 첫 조회"
+        ResultView after = resultViewMapper.findByParticipantId(participant.getParticipantId());
+        boolean isFirstCheck = (after != null && after.getViewCount() == 1);
+
+        // 3) 응답 구성
         ResultResponse response = new ResultResponse();
         response.setPhoneLast4(participant.getPhoneLast4());
         response.setWon(won);
         response.setFirstCheck(isFirstCheck);
 
+        // "첫 조회"일 때만 상세 결과(등수/라벨/번호) 공개
         if (isFirstCheck) {
             response.setResultTier(ticket.getResult().name());
             response.setResultLabel(RESULT_LABELS.get(ticket.getResult()));
@@ -172,15 +180,6 @@ public class LottoService {
                     ticket.getNum1(), ticket.getNum2(), ticket.getNum3(),
                     ticket.getNum4(), ticket.getNum5(), ticket.getNum6()
             ));
-
-            LocalDateTime viewNow = LocalDateTime.now();
-            ResultView newView = new ResultView();
-            newView.setParticipantId(participant.getParticipantId());
-            newView.setFirstViewAt(viewNow);
-            newView.setLastViewAt(viewNow);
-            resultViewMapper.insert(newView);
-        } else {
-            resultViewMapper.incrementViewCount(participant.getParticipantId(), LocalDateTime.now());
         }
 
         return response;

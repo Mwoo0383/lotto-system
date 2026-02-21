@@ -5,6 +5,9 @@
 
 <mapper namespace="com.company.lotto.repository.ParticipantMapper">
 
+    <!--
+        이벤트 참가자 등록
+    -->
     <insert id="insertParticipant" parameterType="Participant" useGeneratedKeys="true" keyProperty="participantId">
         INSERT INTO participant (
         phone_hash,
@@ -24,6 +27,11 @@
         )
     </insert>
 
+    <!--
+        참가자 단건 조회 (중복 참여 체크)
+        - phone_hash + event_id 기준
+        - 한 이벤트에 동일 전화번호로 중복 참여했는지 확인
+    -->
     <select id="findByPhoneHashAndEventId" resultType="Participant">
         SELECT *
         FROM participant
@@ -31,12 +39,12 @@
         AND event_id = #{eventId}
     </select>
 
-    <select id="countByEventId" resultType="int">
-        SELECT COUNT(*)
-        FROM participant
-        WHERE event_id = #{eventId}
-    </select>
-
+    <!--
+        다음 티켓 순번 계산
+        - 이벤트별로 ticket_seq는 1부터 순차 증가
+        - MAX(ticket_seq) + 1 방식
+        - 아직 참가자가 없으면 1 반환 (COALESCE)
+    -->
     <select id="selectNextTicketSeq" resultType="int">
         SELECT COALESCE(MAX(ticket_seq), 0) + 1
         FROM participant

@@ -5,6 +5,12 @@
 
 <mapper namespace="com.company.lotto.repository.PhoneVerificationMapper">
 
+    <!--
+        휴대폰 인증 요청 생성
+        - 이벤트 참여를 위해 인증을 요청한 기록 저장
+        - keyProperty / keyColumn :
+            객체 필드 ↔ DB 컬럼 명이 다른 경우 명시
+    -->
     <insert id="insert" parameterType="PhoneVerification" useGeneratedKeys="true" keyProperty="verificationId" keyColumn="verification_id">
         INSERT INTO phone_verification (
             event_id,
@@ -20,12 +26,20 @@
         )
     </insert>
 
+    <!--
+        인증 요청 단건 조회 - 인증 상태 및 만료 여부 확인에 사용
+    -->
     <select id="findById" resultType="PhoneVerification">
         SELECT *
         FROM phone_verification
         WHERE verification_id = #{verificationId}
     </select>
 
+    <!--
+        인증 상태 업데이트 (인증 성공 처리)
+        - status 변경 (예: VERIFIED)
+        - verified_at : 실제 인증 완료 시각 기록
+    -->
     <update id="updateStatus">
         UPDATE phone_verification
         SET status = #{status},

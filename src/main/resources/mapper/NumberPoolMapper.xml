@@ -5,6 +5,12 @@
 
 <mapper namespace="com.company.lotto.repository.NumberPoolMapper">
 
+    <!--
+        번호 풀 대량 생성 (배치 INSERT)
+        - 이벤트 시작 시 미리 번호 조합을 대량으로 저장
+        - parameterType="list" : List<NumberPool> 전달
+        - foreach를 사용해 VALUES (...) , (...) 형태로 한 번에 INSERT
+    -->
     <insert id="batchInsert" parameterType="list">
         INSERT INTO number_pool (
         slot1, slot2, slot3, slot4, slot5, slot6,
@@ -20,22 +26,24 @@
         </foreach>
     </insert>
 
+    <!--
+        특정 이벤트의 번호 풀 총 개수 조회
+        - 이벤트별로 생성된 번호 풀이 몇 개인지 확인
+    -->
     <select id="countByEventId" resultType="int">
         SELECT COUNT(*)
         FROM number_pool
         WHERE event_id = #{eventId}
     </select>
 
-    <select id="findAvailableSlot" resultType="NumberPool">
-        SELECT *
-        FROM number_pool
-        WHERE event_id = #{eventId}
-          AND result = #{result}
-          AND is_used = 0
-        LIMIT 1
-        FOR UPDATE
-    </select>
-
+    <!--
+        사용 가능한 번호 슬롯 1개 랜덤 조회
+        - result IN (...) : 여러 결과 타입 중 하나
+        - ORDER BY RAND() : 랜덤 추출
+        - LIMIT 1 : 하나만 선택
+        - FOR UPDATE :
+            선택된 row를 잠궈 동시 발급 충돌 방지
+    -->
     <select id="findRandomAvailableSlot" resultType="NumberPool">
         SELECT *
         FROM number_pool
@@ -50,6 +58,11 @@
         FOR UPDATE
     </select>
 
+    <!--
+        번호 풀 사용 처리
+        - 실제로 티켓이 발급되었을 때 호출
+        - is_used = 1 로 변경하여 재사용 방지
+    -->
     <update id="markUsed">
         UPDATE number_pool
         SET is_used = 1
