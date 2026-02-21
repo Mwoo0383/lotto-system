@@ -1,4 +1,4 @@
-package com.company.lotto.dto;
+package com.company.lotto.dto.common;
 
 public record ApiResponse<T>(
         boolean success,

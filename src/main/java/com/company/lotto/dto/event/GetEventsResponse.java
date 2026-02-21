@@ -1,4 +1,4 @@
-package com.company.lotto.dto;
+package com.company.lotto.dto.event;
 
 import com.company.lotto.domain.Event;
 import java.util.List;

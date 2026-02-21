@@ -1,12 +1,11 @@
-package com.company.lotto.dto;
+package com.company.lotto.dto.verification;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ParticipateRequest {
+public class VerificationRequest {
     private String phoneNumber;
     private Long eventId;
-    private Long verificationId;
 }

@@ -1,4 +1,4 @@
-package com.company.lotto.dto;
+package com.company.lotto.dto.lotto;
 
 import java.util.List;
 import lombok.Getter;

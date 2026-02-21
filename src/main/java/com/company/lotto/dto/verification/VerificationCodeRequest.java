@@ -1,4 +1,4 @@
-package com.company.lotto.dto;
+package com.company.lotto.dto.verification;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,11 +1,11 @@
 package com.company.lotto.service;
 
 import com.company.lotto.domain.Event;
-import com.company.lotto.dto.AnnouncingEventResponse;
-import com.company.lotto.dto.CreateEventRequest;
-import com.company.lotto.dto.CreateEventResponse;
-import com.company.lotto.dto.EventDetailResponse;
-import com.company.lotto.dto.GetEventsResponse;
+import com.company.lotto.dto.event.AnnouncingEventResponse;
+import com.company.lotto.dto.event.CreateEventRequest;
+import com.company.lotto.dto.event.CreateEventResponse;
+import com.company.lotto.dto.event.EventDetailResponse;
+import com.company.lotto.dto.event.GetEventsResponse;
 import com.company.lotto.repository.EventMapper;
 import java.time.Clock;
 import java.time.LocalDateTime;
