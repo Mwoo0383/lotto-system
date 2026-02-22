@@ -59,11 +59,11 @@ function renderEvents(events) {
         let actions = '';
         if (inEvent) {
             actions = `<div class="event-actions">
-                <a href="/participate?eventId=${ev.eventId}" class="btn-participate">참가하기</a>
+                <a href="/participate.html?eventId=${ev.eventId}" class="btn-participate">참가하기</a>
             </div>`;
         } else if (inAnnounce) {
             actions = `<div class="event-actions">
-                <a href="/result?eventId=${ev.eventId}" class="btn-result">결과보기</a>
+                <a href="/result.html?eventId=${ev.eventId}" class="btn-result">결과보기</a>
             </div>`;
         }
 

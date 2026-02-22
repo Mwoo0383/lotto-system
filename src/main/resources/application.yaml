@@ -3,10 +3,6 @@ spring:
     name: lotto
   profiles:
     active: mysql
-  mvc:
-    view:
-      prefix: /WEB-INF/views/
-      suffix: .jsp
 
   data:
     redis:

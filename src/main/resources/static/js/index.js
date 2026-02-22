@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (announceData.announcing) {
             localStorage.setItem(visitKey, today);
-            location.href = `/result?eventId=${announceData.eventId}`;
+            location.href = `/result.html?eventId=${announceData.eventId}`;
             return;
         }
 
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (data.active) {
             localStorage.setItem(visitKey, today);
-            location.href = '/events';
+            location.href = '/events.html';
         }
     } catch (e) {
         // 네트워크 오류 등은 무시 (메인 화면 유지)
