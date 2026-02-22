@@ -1,3 +1,4 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -54,7 +55,7 @@
         <div id="error-message" class="error hidden"></div>
 
         <div class="back-link">
-            <a href="/events.html">목록으로 돌아가기</a>
+            <a href="/events">목록으로 돌아가기</a>
         </div>
     </div>
 </body>
