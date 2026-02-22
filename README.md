@@ -18,12 +18,13 @@
 ### Frontend
 | 분류 | 기술 |
 |------|------|
-| 템플릿 | 정적 HTML|
+| 템플릿 | JSP (Spring MVC ViewResolver) |
 | 스크립트 | Vanilla JavaScript |
 | 스타일 | Custom CSS |
 | 통신 | Fetch API (REST JSON) |
 
-> 모든 페이지는 `src/main/resources/static/`에 위치하며 Spring Boot가 정적 파일로 서빙한다.
+> JSP 파일은 `src/main/webapp/WEB-INF/views/`에 위치하며 `PageController`가 각 URL을 뷰로 라우팅한다.
+> JS/CSS 정적 파일은 `src/main/resources/static/`에서 그대로 서빙된다.
 
 ---
 
@@ -40,6 +41,7 @@ src/
 │   │   │   └── DemoDataInitializer.java    # H2 프로파일 시 데모 풀 자동 생성
 │   │   ├── controller/
 │   │   │   ├── LottoController.java        # REST API 엔드포인트
+│   │   │   ├── PageController.java         # JSP 뷰 라우팅 (/, /events, /participate 등)
 │   │   │   └── GlobalExceptionHandler.java # 전역 예외 처리
 │   │   ├── service/
 │   │   │   ├── LottoService.java           # 참가/결과 조회 비즈니스 로직
@@ -66,12 +68,7 @@ src/
 │       ├── schema-h2.sql                   # H2 DDL
 │       ├── data-h2.sql                     # H2 데모 데이터
 │       ├── mapper/                         # MyBatis XML
-│       └── static/                         # 프론트엔드 (정적 파일)
-│           ├── index.html                  # 메인 페이지
-│           ├── events.html                 # 이벤트 목록
-│           ├── participate.html            # 이벤트 참가 (인증 → 번호 발급)
-│           ├── result.html                 # 당첨 결과 조회
-│           ├── admin.html                  # 관리자 페이지
+│       └── static/                         # JS / CSS 정적 파일
 │           ├── js/
 │           │   ├── lotto.js               # 참가 페이지 로직
 │           │   ├── events.js              # 이벤트 목록 로직
@@ -84,6 +81,14 @@ src/
 │               ├── result.css
 │               ├── admin.css
 │               └── index.css
+└── webapp/
+    └── WEB-INF/
+        └── views/                          # JSP 뷰 템플릿
+            ├── index.jsp                   # 메인 페이지  → /
+            ├── events.jsp                  # 이벤트 목록  → /events
+            ├── participate.jsp             # 이벤트 참가  → /participate
+            ├── result.jsp                  # 당첨 결과    → /result
+            └── admin.jsp                   # 관리자 페이지 → /admin
 ```
 
 ---
