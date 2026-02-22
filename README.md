@@ -18,7 +18,7 @@
 ### Frontend
 | 분류 | 기술 |
 |------|------|
-| 템플릿 | JSP (Spring MVC ViewResolver) |
+| 템플릿 | JSP  |
 | 스크립트 | Vanilla JavaScript |
 | 스타일 | Custom CSS |
 | 통신 | Fetch API (REST JSON) |
