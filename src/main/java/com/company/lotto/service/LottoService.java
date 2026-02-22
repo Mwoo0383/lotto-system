@@ -74,10 +74,23 @@ public class LottoService {
 
         // 3. 중복 체크
         // - phoneNumber를 hash 처리해서 저장/비교 (개인정보 보호 + 중복 방지)
+        // - 이미 참가한 경우 에러 대신 기존 발급 번호를 반환
         String phoneHash = verificationService.hashPhone(phoneNumber);
         Participant existing = participantMapper.findByPhoneHashAndEventId(phoneHash, eventId);
         if (existing != null) {
-            throw new IllegalStateException("이미 참가한 번호입니다.");
+            LottoTicket existingTicket = lottoTicketMapper.findByParticipantId(existing.getParticipantId());
+            if (existingTicket == null) {
+                throw new IllegalStateException("이미 참가한 번호입니다.");
+            }
+            ParticipateResponse alreadyResponse = new ParticipateResponse();
+            alreadyResponse.setLottoNumbers(List.of(
+                    existingTicket.getNum1(), existingTicket.getNum2(), existingTicket.getNum3(),
+                    existingTicket.getNum4(), existingTicket.getNum5(), existingTicket.getNum6()
+            ));
+            alreadyResponse.setPhoneLast4(existing.getPhoneLast4());
+            alreadyResponse.setMessage("이미 발급된 로또 번호입니다.");
+            alreadyResponse.setAlreadyIssued(true);
+            return alreadyResponse;
         }
 
         // 4. participant 저장 준비
@@ -103,7 +116,20 @@ public class LottoService {
                 participantMapper.insertParticipant(participant);
                 break; // 저장 성공하면 루프 종료
             } catch (DuplicateKeyException e) {
-                if (participantMapper.findByPhoneHashAndEventId(phoneHash, eventId) != null) {
+                Participant race = participantMapper.findByPhoneHashAndEventId(phoneHash, eventId);
+                if (race != null) {
+                    LottoTicket raceTicket = lottoTicketMapper.findByParticipantId(race.getParticipantId());
+                    if (raceTicket != null) {
+                        ParticipateResponse raceResponse = new ParticipateResponse();
+                        raceResponse.setLottoNumbers(List.of(
+                                raceTicket.getNum1(), raceTicket.getNum2(), raceTicket.getNum3(),
+                                raceTicket.getNum4(), raceTicket.getNum5(), raceTicket.getNum6()
+                        ));
+                        raceResponse.setPhoneLast4(race.getPhoneLast4());
+                        raceResponse.setMessage("이미 발급된 로또 번호입니다.");
+                        raceResponse.setAlreadyIssued(true);
+                        return raceResponse;
+                    }
                     throw new IllegalStateException("이미 참가한 번호입니다.");
                 }
                 // 재시도 끝까지 실패하면 사용자에게 재시도 안내

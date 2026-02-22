@@ -10,4 +10,5 @@ public class ParticipateResponse {
     private List<Integer> lottoNumbers;
     private String phoneLast4;
     private String message;
+    private boolean alreadyIssued;
 }

@@ -113,6 +113,8 @@ async function participate() {
 
         document.getElementById('step-participate').classList.add('hidden');
         document.getElementById('step-result').classList.remove('hidden');
+        document.getElementById('step-result').querySelector('h2').textContent =
+            data.alreadyIssued ? '기존 발급 번호' : '발급 완료!';
         document.getElementById('result-message').textContent =
             `${data.phoneLast4}님의 ${data.message}`;
 
