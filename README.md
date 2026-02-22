@@ -18,9 +18,9 @@
 ### Frontend
 | 분류 | 기술 |
 |------|------|
-| 템플릿 | 정적 HTML (JSP 아님, 서버 사이드 렌더링 없음) |
-| 스크립트 | Vanilla JavaScript (프레임워크 미사용) |
-| 스타일 | Custom CSS (라이브러리 미사용) |
+| 템플릿 | 정적 HTML|
+| 스크립트 | Vanilla JavaScript |
+| 스타일 | Custom CSS |
 | 통신 | Fetch API (REST JSON) |
 
 > 모든 페이지는 `src/main/resources/static/`에 위치하며 Spring Boot가 정적 파일로 서빙한다.
@@ -88,28 +88,7 @@ src/
 
 ---
 
-## 실행 방법
 
-### 로컬 개발 (H2 인메모리 DB)
-
-별도 DB/Redis 설치 없이 바로 실행 가능하다. 시작 시 데모 이벤트와 번호 풀이 자동 생성된다.
-
-```bash
-./gradlew bootRun --args='--spring.profiles.active=h2'
-```
-
-서버 기동 후 `http://localhost:8080` 접속.
-H2 콘솔: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:lottodb`)
-
-### 운영 환경 (MySQL + Redis)
-
-아래 환경 변수를 설정 후 실행한다.
-
-```bash
-./gradlew bootRun --args='--spring.profiles.active=local'
-```
-
----
 
 ## 환경 변수
 
